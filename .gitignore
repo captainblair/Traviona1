@@ -1,0 +1,13 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.db
+.env
+.env.*
+.DS_Store
+.idea/
+.vscode/
+"traviona images/"
+"Traviona wireframes/"
