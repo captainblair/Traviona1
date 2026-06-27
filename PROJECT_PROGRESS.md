@@ -32,6 +32,9 @@ The backend foundation has been created and verified. The project now includes:
 - Job application admin registration
 - Public OpenAPI schema endpoint for frontend integration at `/api/schema/`
 - Schema dependencies and regression coverage for OpenAPI contract generation
+- Richer website content APIs with homepage sections, service detail pages, and SEO metadata
+- Recruiter dashboard summaries, talent search/filtering, application status history, and in-app recruitment notifications
+- Insight taxonomy models, moderation statuses, external source configuration, provider ingestion, and scheduled Celery sync
 - Verified Django system checks with no issues
 - A passing backend test suite covering core, auth, content, insights, and recruitment behavior
 
@@ -92,25 +95,25 @@ The following items are still pending from the planned architecture:
 - Wagtail editorial workflow/CMS integration [pending]
 
 ### Content management
-- Expand the website content model for richer pages and SEO fields
-- Add more structured content blocks for the homepage and services
+- Expand the website content model for richer pages and SEO fields [implemented]
+- Add more structured content blocks for the homepage and services [implemented]
 - Prepare for future CMS integration such as Wagtail
 
 ### Insights section
-- Add richer moderation approval states beyond draft/published
-- Add normalized category/tag/author models when editorial needs outgrow simple fields
-- Add real NewsAPI/GNews/RSS provider clients
+- Add richer moderation approval states beyond draft/published [implemented]
+- Add normalized category/tag/author models when editorial needs outgrow simple fields [implemented]
+- Add real NewsAPI/GNews/RSS provider clients [implemented with env-key driven NewsAPI/GNews and keyless RSS support]
 
 ### Recruitment system
-- Add recruiter dashboard summary endpoints
-- Add talent search and filtering
-- Add richer applicant tracking history and notifications
+- Add recruiter dashboard summary endpoints [implemented]
+- Add talent search and filtering [implemented]
+- Add richer applicant tracking history and notifications [implemented]
 
 ### API and integrations
 - Add authentication-protected API endpoints [implemented for user profile, editorial, recruitment, and role-management workflows]
 - Add public OpenAPI schema/docs for frontend integration [implemented]
-- Connect external news/job ingestion services
-- Add Celery beat schedules for recurring automation
+- Connect external news/job ingestion services [partially implemented with configured insight sources and job sync service]
+- Add Celery beat schedules for recurring automation [implemented for configured insight ingestion]
 - Add caching and performance optimization
 
 ### Deployment and production readiness
@@ -155,6 +158,21 @@ The following items are still pending from the planned architecture:
 - Gave editorial insight detail operations distinct OpenAPI IDs from public insight detail operations
 - Increased test coverage from 34 to 35 backend tests
 
+## Content, Recruitment & Insights Expansion Milestone
+- Added SEO metadata to homepage, about page, and service content
+- Added ordered homepage content sections for CMS-ready frontend composition
+- Added detailed service page fields and a public service detail endpoint
+- Added recruiter dashboard metrics at `/api/recruitment/dashboard/`
+- Added talent directory filters for specialization, location, availability, minimum experience, verification, and search
+- Added application status history records and applicant notifications for submissions/status changes
+- Added notification list/detail APIs for authenticated users
+- Added normalized insight categories, tags, authors, and configured external sources
+- Added insight moderation statuses and an editor moderation endpoint
+- Added RSS parsing plus NewsAPI/GNews-compatible provider fetchers using environment-based API keys
+- Added hourly Celery Beat scheduling for configured insight ingestion
+- Expanded Docker Compose with Celery worker and Celery Beat services
+- Increased test coverage from 35 to 50 backend tests
+
 ## Notes for Future Updates
 This file should be updated whenever:
 - a major feature is completed
@@ -163,4 +181,4 @@ This file should be updated whenever:
 - the scope of the backend changes significantly
 
 ## Next Recommended Step
-The next recommended milestone is richer frontend readiness: consistent response contracts, richer website content endpoints, and Docker/Celery/PostgreSQL local infrastructure.
+The next recommended milestone is auth/security, deployment hardening, and frontend readiness polish: social login/MFA, PostgreSQL Docker support, CI/CD, caching, response contract consistency, and seed data.

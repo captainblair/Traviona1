@@ -78,3 +78,40 @@ class JobApplication(models.Model):
 
     def __str__(self):
         return f'{self.applicant} -> {self.job}'
+
+
+class ApplicationStatusHistory(models.Model):
+    application = models.ForeignKey(JobApplication, related_name='status_history', on_delete=models.CASCADE)
+    previous_status = models.CharField(max_length=30, blank=True)
+    new_status = models.CharField(max_length=30, choices=JobApplication.STATUS_CHOICES)
+    note = models.TextField(blank=True)
+    changed_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='application_status_changes', on_delete=models.SET_NULL, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at', '-id']
+
+    def __str__(self):
+        return f'{self.application_id}: {self.previous_status} -> {self.new_status}'
+
+
+class RecruitmentNotification(models.Model):
+    NOTIFICATION_TYPE_CHOICES = [
+        ('application_submitted', 'Application Submitted'),
+        ('application_status_changed', 'Application Status Changed'),
+        ('talent_verified', 'Talent Verified'),
+    ]
+
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='recruitment_notifications', on_delete=models.CASCADE)
+    application = models.ForeignKey(JobApplication, related_name='notifications', on_delete=models.CASCADE, blank=True, null=True)
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    message = models.TextField(blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at', '-id']
+
+    def __str__(self):
+        return self.title

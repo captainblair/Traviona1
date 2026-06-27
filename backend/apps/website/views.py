@@ -7,6 +7,7 @@ from .serializers import (
     GlobalPresenceSerializer,
     HomePageSerializer,
     LeadershipMemberSerializer,
+    ServiceDetailSerializer,
     ServiceSerializer,
 )
 
@@ -32,8 +33,15 @@ class AboutPageView(LatestActiveMixin, generics.RetrieveAPIView):
 
 
 class ServiceListView(generics.ListAPIView):
-    queryset = Service.objects.filter(is_active=True).order_by('name')
+    queryset = Service.objects.filter(is_active=True)
     serializer_class = ServiceSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class ServiceDetailView(generics.RetrieveAPIView):
+    queryset = Service.objects.filter(is_active=True)
+    serializer_class = ServiceDetailSerializer
+    lookup_field = 'slug'
     permission_classes = [permissions.AllowAny]
 
 

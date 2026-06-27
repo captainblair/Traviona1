@@ -7,6 +7,9 @@ class AboutPage(models.Model):
     summary = models.TextField(blank=True)
     content = models.TextField(blank=True)
     hero_image = models.ImageField(upload_to='website/about/', blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True)
+    seo_description = models.CharField(max_length=300, blank=True)
+    seo_keywords = models.CharField(max_length=300, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -23,8 +26,40 @@ class HomePage(models.Model):
     primary_call_to_action_url = models.CharField(max_length=250, blank=True)
     secondary_call_to_action_label = models.CharField(max_length=100, blank=True)
     secondary_call_to_action_url = models.CharField(max_length=250, blank=True)
+    seo_title = models.CharField(max_length=200, blank=True)
+    seo_description = models.CharField(max_length=300, blank=True)
+    seo_keywords = models.CharField(max_length=300, blank=True)
     is_active = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+
+class HomePageSection(models.Model):
+    SECTION_TYPE_CHOICES = [
+        ('overview', 'Overview'),
+        ('service_highlight', 'Service Highlight'),
+        ('stat', 'Stat'),
+        ('testimonial', 'Testimonial'),
+        ('call_to_action', 'Call to Action'),
+        ('custom', 'Custom'),
+    ]
+
+    home_page = models.ForeignKey(HomePage, related_name='sections', on_delete=models.CASCADE)
+    section_type = models.CharField(max_length=40, choices=SECTION_TYPE_CHOICES, default='custom')
+    eyebrow = models.CharField(max_length=120, blank=True)
+    title = models.CharField(max_length=200)
+    body = models.TextField(blank=True)
+    image = models.ImageField(upload_to='website/home/sections/', blank=True, null=True)
+    link_label = models.CharField(max_length=100, blank=True)
+    link_url = models.CharField(max_length=250, blank=True)
+    metadata = models.JSONField(blank=True, null=True)
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['display_order', 'id']
 
     def __str__(self):
         return self.title
@@ -33,10 +68,22 @@ class HomePage(models.Model):
 class Service(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
+    short_description = models.CharField(max_length=300, blank=True)
     description = models.TextField(blank=True)
+    detailed_description = models.TextField(blank=True)
+    outcomes = models.TextField(blank=True)
+    process = models.TextField(blank=True)
     icon_name = models.CharField(max_length=100, blank=True)
+    featured_image = models.ImageField(upload_to='website/services/', blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True)
+    seo_description = models.CharField(max_length=300, blank=True)
+    seo_keywords = models.CharField(max_length=300, blank=True)
+    display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['display_order', 'name']
 
     def save(self, *args, **kwargs):
         if not self.slug:

@@ -1,21 +1,43 @@
 from django.contrib import admin
-from .models import AboutPage, ContactInformation, GlobalPresence, HomePage, LeadershipMember, Service
+from .models import AboutPage, ContactInformation, GlobalPresence, HomePage, HomePageSection, LeadershipMember, Service
 
 
 @admin.register(AboutPage)
 class AboutPageAdmin(admin.ModelAdmin):
     list_display = ('title', 'is_active', 'updated_at')
+    fieldsets = (
+        (None, {'fields': ('title', 'summary', 'content', 'hero_image', 'is_active')}),
+        ('SEO', {'fields': ('seo_title', 'seo_description', 'seo_keywords')}),
+    )
 
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'is_active')
+    list_display = ('name', 'slug', 'display_order', 'is_active')
+    list_filter = ('is_active',)
     prepopulated_fields = {'slug': ('name',)}
+    search_fields = ('name', 'short_description', 'description', 'detailed_description')
+    fieldsets = (
+        (None, {'fields': ('name', 'slug', 'short_description', 'description', 'detailed_description', 'outcomes', 'process')}),
+        ('Presentation', {'fields': ('icon_name', 'featured_image', 'display_order', 'is_active')}),
+        ('SEO', {'fields': ('seo_title', 'seo_description', 'seo_keywords')}),
+    )
+
+
+class HomePageSectionInline(admin.TabularInline):
+    model = HomePageSection
+    extra = 1
 
 
 @admin.register(HomePage)
 class HomePageAdmin(admin.ModelAdmin):
     list_display = ('title', 'is_active', 'updated_at')
+    inlines = [HomePageSectionInline]
+    fieldsets = (
+        (None, {'fields': ('title', 'subtitle', 'hero_image', 'is_active')}),
+        ('Calls to action', {'fields': ('primary_call_to_action_label', 'primary_call_to_action_url', 'secondary_call_to_action_label', 'secondary_call_to_action_url')}),
+        ('SEO', {'fields': ('seo_title', 'seo_description', 'seo_keywords')}),
+    )
 
 
 @admin.register(LeadershipMember)

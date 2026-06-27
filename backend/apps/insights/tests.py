@@ -1,11 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from unittest.mock import patch
 from rest_framework.test import APIClient
 
-from apps.insights.models import Insight
-from apps.insights.services import sync_external_insights
-from apps.insights.tasks import sync_external_insights_task
+from apps.insights.models import ExternalInsightSource, Insight, InsightAuthor, InsightCategory, InsightTag
+from apps.insights.services import parse_rss_feed, sync_configured_external_sources, sync_external_insights
+from apps.insights.tasks import sync_configured_external_insights_task, sync_external_insights_task
 
 User = get_user_model()
 
@@ -178,3 +179,142 @@ class InsightDraftPermissionsTests(TestCase):
 
         self.assertEqual(created, 1)
         self.assertTrue(Insight.objects.filter(title='Task Imported Draft').exists())
+
+    def test_public_taxonomy_endpoints_return_categories_tags_and_authors(self):
+        InsightCategory.objects.create(name='Security')
+        InsightTag.objects.create(name='Elections')
+        InsightAuthor.objects.create(name='Traviona Desk', title='Editorial team')
+
+        category_response = self.client.get(reverse('insight-category-list'))
+        tag_response = self.client.get(reverse('insight-tag-list'))
+        author_response = self.client.get(reverse('insight-author-list'))
+
+        self.assertEqual(category_response.status_code, 200)
+        self.assertEqual(tag_response.status_code, 200)
+        self.assertEqual(author_response.status_code, 200)
+        self.assertEqual(category_response.json()['results'][0]['slug'], 'security')
+        self.assertEqual(tag_response.json()['results'][0]['slug'], 'elections')
+        self.assertEqual(author_response.json()['results'][0]['name'], 'Traviona Desk')
+
+    def test_public_insight_list_supports_normalized_taxonomy_filters(self):
+        category = InsightCategory.objects.create(name='Security')
+        tag = InsightTag.objects.create(name='Elections')
+        insight = Insight.objects.create(
+            title='Normalized taxonomy article',
+            summary='Election security',
+            content='Election security analysis',
+            category_ref=category,
+            is_published=True,
+            moderation_status='published',
+        )
+        insight.tag_refs.add(tag)
+
+        response = self.client.get(reverse('insight-list'), {
+            'category': 'security',
+            'tag': 'elections',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()['results']), 1)
+        self.assertEqual(response.json()['results'][0]['category_detail']['slug'], 'security')
+        self.assertEqual(response.json()['results'][0]['tag_details'][0]['slug'], 'elections')
+
+    def test_editor_can_update_moderation_status(self):
+        editor = User.objects.create_user(username='moderator', password='StrongPass123!', role='content_editor')
+        insight = Insight.objects.create(title='Moderated article', summary='Summary', content='Content')
+        self.client.force_authenticate(user=editor)
+
+        response = self.client.patch(reverse('insight-moderation-status', kwargs={'slug': insight.slug}), {
+            'moderation_status': 'in_review',
+            'moderation_notes': 'Ready for review',
+        }, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        insight.refresh_from_db()
+        self.assertEqual(insight.moderation_status, 'in_review')
+        self.assertEqual(insight.moderation_notes, 'Ready for review')
+
+    def test_editor_can_manage_external_insight_sources(self):
+        editor = User.objects.create_user(username='source-editor', password='StrongPass123!', role='content_editor')
+        category = InsightCategory.objects.create(name='Global Trends')
+        tag = InsightTag.objects.create(name='Markets')
+        self.client.force_authenticate(user=editor)
+
+        response = self.client.post(reverse('insight-source-list'), {
+            'name': 'Traviona RSS',
+            'provider': 'rss',
+            'endpoint_url': 'https://example.com/feed.xml',
+            'default_category': category.id,
+            'default_tags': [tag.id],
+            'is_active': True,
+        }, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        source = ExternalInsightSource.objects.get(name='Traviona RSS')
+        self.assertEqual(source.default_category, category)
+        self.assertEqual(source.default_tags.count(), 1)
+
+    def test_rss_parser_maps_items_to_external_payloads(self):
+        payloads = parse_rss_feed("""
+            <rss><channel>
+                <item>
+                    <title>RSS Insight</title>
+                    <link>https://news.example/rss-insight</link>
+                    <description>RSS summary</description>
+                </item>
+            </channel></rss>
+        """, source_name='Example RSS')
+
+        self.assertEqual(len(payloads), 1)
+        self.assertEqual(payloads[0]['title'], 'RSS Insight')
+        self.assertEqual(payloads[0]['source_name'], 'Example RSS')
+
+    def test_sync_external_insights_applies_source_defaults(self):
+        category = InsightCategory.objects.create(name='Economy')
+        tag = InsightTag.objects.create(name='Markets')
+        source = ExternalInsightSource.objects.create(
+            name='Economy RSS',
+            provider='rss',
+            endpoint_url='https://example.com/economy.xml',
+            default_category=category,
+        )
+        source.default_tags.add(tag)
+
+        created = sync_external_insights([{
+            'title': 'Source Default Article',
+            'summary': 'Imported summary',
+            'source_name': 'Economy RSS',
+            'source_url': 'https://example.com/source-default',
+        }], source=source)
+
+        insight = Insight.objects.get(title='Source Default Article')
+        self.assertEqual(created, 1)
+        self.assertEqual(insight.category_ref, category)
+        self.assertEqual(insight.tag_refs.first(), tag)
+
+    def test_sync_configured_external_sources_uses_active_sources(self):
+        source = ExternalInsightSource.objects.create(
+            name='Configured RSS',
+            provider='rss',
+            endpoint_url='https://example.com/configured.xml',
+        )
+
+        with patch('apps.insights.services.fetch_external_source_payloads') as fetch_payloads:
+            fetch_payloads.return_value = [{
+                'title': 'Configured Source Article',
+                'summary': 'Fetched summary',
+                'source_name': 'Configured RSS',
+                'source_url': 'https://example.com/configured-article',
+            }]
+            created = sync_configured_external_sources()
+
+        source.refresh_from_db()
+        self.assertEqual(created, 1)
+        self.assertIsNotNone(source.last_synced_at)
+        self.assertTrue(Insight.objects.filter(title='Configured Source Article').exists())
+
+    def test_configured_external_insights_task_runs_sync(self):
+        with patch('apps.insights.tasks.sync_configured_external_sources') as sync_sources:
+            sync_sources.return_value = 2
+
+            self.assertEqual(sync_configured_external_insights_task(), 2)

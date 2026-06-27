@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from apps.recruitment.models import JobApplication, JobPosting, TalentProfile
+from apps.recruitment.models import ApplicationStatusHistory, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
 from apps.recruitment.services import sync_external_jobs
 
 User = get_user_model()
@@ -225,3 +225,105 @@ class RecruitmentPermissionTests(TestCase):
         application.refresh_from_db()
         self.assertEqual(application.status, 'reviewing')
         self.assertEqual(application.notes, 'Strong profile')
+
+    def test_talent_list_supports_search_and_profile_filters(self):
+        TalentProfile.objects.create(
+            full_name='Amina Researcher',
+            specialization='Human rights research',
+            location='Nairobi',
+            years_experience=7,
+            availability='Immediate',
+            is_verified=True,
+            is_public=True,
+        )
+        TalentProfile.objects.create(
+            full_name='Hidden Match',
+            specialization='Human rights research',
+            location='London',
+            years_experience=2,
+            availability='Later',
+            is_verified=False,
+            is_public=True,
+        )
+
+        response = self.client.get(reverse('talent-list'), {
+            'specialization': 'rights',
+            'location': 'Nairobi',
+            'availability': 'Immediate',
+            'min_experience': 5,
+            'is_verified': 'true',
+            'q': 'Amina',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()['results']), 1)
+        self.assertEqual(response.json()['results'][0]['full_name'], 'Amina Researcher')
+
+    def test_application_status_update_creates_history_and_notification(self):
+        recruiter = User.objects.create_user(username='history-recruiter', password='StrongPass123!', role='recruiter')
+        applicant = User.objects.create_user(username='history-applicant', password='StrongPass123!')
+        job = JobPosting.objects.create(title='History Consultant', slug='history-consultant')
+        application = JobApplication.objects.create(job=job, applicant=applicant)
+        self.client.force_authenticate(user=recruiter)
+
+        response = self.client.patch(reverse('application-detail', kwargs={'pk': application.pk}), {
+            'status': 'shortlisted',
+            'notes': 'Good fit',
+        }, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(ApplicationStatusHistory.objects.filter(application=application, previous_status='submitted', new_status='shortlisted').exists())
+        self.assertTrue(RecruitmentNotification.objects.filter(recipient=applicant, notification_type='application_status_changed').exists())
+        self.assertEqual(response.json()['status_history'][0]['new_status'], 'shortlisted')
+
+    def test_applying_creates_submission_history_and_notification(self):
+        applicant = User.objects.create_user(username='notify-applicant', password='StrongPass123!')
+        job = JobPosting.objects.create(title='Notification Job', slug='notification-job')
+        self.client.force_authenticate(user=applicant)
+
+        response = self.client.post(reverse('apply-to-job', kwargs={'job_id': job.pk}), {
+            'cover_letter': 'Ready to contribute.',
+        }, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        application = JobApplication.objects.get(job=job, applicant=applicant)
+        self.assertTrue(ApplicationStatusHistory.objects.filter(application=application, new_status='submitted').exists())
+        self.assertTrue(RecruitmentNotification.objects.filter(recipient=applicant, notification_type='application_submitted').exists())
+
+    def test_recruiter_dashboard_returns_summary_counts(self):
+        recruiter = User.objects.create_user(username='dashboard-recruiter', password='StrongPass123!', role='recruiter')
+        applicant = User.objects.create_user(username='dashboard-applicant', password='StrongPass123!')
+        job = JobPosting.objects.create(title='Dashboard Job', slug='dashboard-job')
+        JobApplication.objects.create(job=job, applicant=applicant, status='reviewing')
+        TalentProfile.objects.create(user=applicant, full_name='Dashboard Talent', is_verified=True)
+        self.client.force_authenticate(user=recruiter)
+
+        response = self.client.get(reverse('recruitment-dashboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['active_jobs'], 1)
+        self.assertEqual(response.json()['applications_by_status']['reviewing'], 1)
+        self.assertEqual(response.json()['verified_talent_profiles'], 1)
+
+    def test_user_can_list_and_mark_own_notifications_read(self):
+        applicant = User.objects.create_user(username='notification-owner', password='StrongPass123!')
+        job = JobPosting.objects.create(title='Notification Owner Job', slug='notification-owner-job')
+        application = JobApplication.objects.create(job=job, applicant=applicant)
+        notification = RecruitmentNotification.objects.create(
+            recipient=applicant,
+            application=application,
+            notification_type='application_status_changed',
+            title='Status changed',
+        )
+        self.client.force_authenticate(user=applicant)
+
+        list_response = self.client.get(reverse('recruitment-notification-list'))
+        update_response = self.client.patch(reverse('recruitment-notification-detail', kwargs={'pk': notification.pk}), {
+            'is_read': True,
+        }, format='json')
+
+        self.assertEqual(list_response.status_code, 200)
+        self.assertEqual(len(list_response.json()['results']), 1)
+        self.assertEqual(update_response.status_code, 200)
+        notification.refresh_from_db()
+        self.assertTrue(notification.is_read)

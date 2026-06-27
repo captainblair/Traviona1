@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from apps.website.models import AboutPage, Service
+from apps.website.models import AboutPage, HomePage, HomePageSection, Service
 
 
 class WebsitePublicEndpointTests(TestCase):
@@ -24,3 +24,37 @@ class WebsitePublicEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()['results']), 1)
         self.assertEqual(response.json()['results'][0]['name'], 'Risk Advisory')
+
+    def test_home_endpoint_returns_active_sections_and_seo_fields(self):
+        home = HomePage.objects.create(
+            title='Traviona',
+            subtitle='Global advisory',
+            seo_title='Traviona Consulting',
+            seo_description='Strategic consulting for complex markets.',
+        )
+        HomePageSection.objects.create(home_page=home, title='Advisory services', body='Practical support', display_order=1)
+        HomePageSection.objects.create(home_page=home, title='Hidden section', is_active=False, display_order=2)
+
+        response = self.client.get(reverse('home-page'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['seo_title'], 'Traviona Consulting')
+        self.assertEqual(len(response.json()['sections']), 1)
+        self.assertEqual(response.json()['sections'][0]['title'], 'Advisory services')
+
+    def test_service_detail_returns_richer_content_and_seo_fields(self):
+        service = Service.objects.create(
+            name='Risk Advisory',
+            short_description='Risk support',
+            detailed_description='Detailed risk advisory support.',
+            outcomes='Clear risk decisions',
+            process='Assess, advise, support',
+            seo_title='Risk Advisory Services',
+            is_active=True,
+        )
+
+        response = self.client.get(reverse('service-detail', kwargs={'slug': service.slug}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['detailed_description'], 'Detailed risk advisory support.')
+        self.assertEqual(response.json()['seo_title'], 'Risk Advisory Services')

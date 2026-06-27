@@ -161,4 +161,9 @@ CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default='redis://localhost:
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-
+CELERY_BEAT_SCHEDULE = {
+    'sync-configured-external-insights-hourly': {
+        'task': 'apps.insights.tasks.sync_configured_external_insights_task',
+        'schedule': 60 * 60,
+    },
+}
