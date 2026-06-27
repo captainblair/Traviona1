@@ -13,3 +13,5 @@ __pycache__/
 .vscode/
 traviona images/
 Traviona wireframes/
+frontend/node_modules/
+frontend/dist/
