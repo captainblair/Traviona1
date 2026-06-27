@@ -4,6 +4,7 @@ import Header from './components/Header.jsx';
 import ScrollToHash from './components/ScrollToHash.jsx';
 import AboutPage from './pages/AboutPage.jsx';
 import HomePage from './pages/HomePage.jsx';
+import InsightsPage from './pages/InsightsPage.jsx';
 
 function AppLayout({ children, showFooter = true }) {
   return (
@@ -33,6 +34,14 @@ export default function App() {
           element={
             <AppLayout showFooter={false}>
               <AboutPage />
+            </AppLayout>
+          }
+        />
+        <Route
+          path="/insights"
+          element={
+            <AppLayout showFooter={false}>
+              <InsightsPage />
             </AppLayout>
           }
         />
