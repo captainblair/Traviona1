@@ -11,10 +11,12 @@ class JobPostingSerializer(serializers.ModelSerializer):
 class TalentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = TalentProfile
-        fields = ['id', 'full_name', 'headline', 'specialization', 'location', 'bio', 'years_experience', 'availability', 'is_public', 'is_verified', 'created_at']
+        fields = ['id', 'user', 'full_name', 'headline', 'specialization', 'location', 'bio', 'years_experience', 'availability', 'is_public', 'is_verified', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user', 'is_verified', 'created_at', 'updated_at']
 
 
 class JobApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobApplication
-        fields = ['id', 'job', 'applicant', 'cover_letter', 'status', 'applied_at']
+        fields = ['id', 'job', 'applicant', 'cover_letter', 'notes', 'status', 'applied_at', 'updated_at']
+        read_only_fields = ['id', 'job', 'applicant', 'cover_letter', 'applied_at', 'updated_at']

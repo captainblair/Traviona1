@@ -1,9 +1,22 @@
 from django.urls import path
-from .views import ApplyToJobView, JobDetailView, JobListView, TalentProfileListView
+from .views import (
+    ApplicationDetailView,
+    ApplicationListView,
+    ApplyToJobView,
+    JobDetailView,
+    JobListView,
+    MyTalentProfileView,
+    TalentProfileListView,
+    TalentProfileVerifyView,
+)
 
 urlpatterns = [
     path('jobs/', JobListView.as_view(), name='job-list'),
     path('jobs/<slug:slug>/', JobDetailView.as_view(), name='job-detail'),
     path('jobs/<int:job_id>/apply/', ApplyToJobView.as_view(), name='apply-to-job'),
+    path('applications/', ApplicationListView.as_view(), name='application-list'),
+    path('applications/<int:pk>/', ApplicationDetailView.as_view(), name='application-detail'),
     path('talents/', TalentProfileListView.as_view(), name='talent-list'),
+    path('talents/me/', MyTalentProfileView.as_view(), name='my-talent-profile'),
+    path('talents/<int:pk>/verify/', TalentProfileVerifyView.as_view(), name='talent-verify'),
 ]

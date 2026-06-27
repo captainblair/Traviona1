@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import JobPosting, TalentProfile
+from .models import JobApplication, JobPosting, TalentProfile
 
 
 @admin.register(JobPosting)
@@ -13,3 +13,10 @@ class JobPostingAdmin(admin.ModelAdmin):
 class TalentProfileAdmin(admin.ModelAdmin):
     list_display = ('full_name', 'specialization', 'location', 'is_public', 'created_at')
     search_fields = ('full_name', 'headline', 'specialization')
+
+
+@admin.register(JobApplication)
+class JobApplicationAdmin(admin.ModelAdmin):
+    list_display = ('job', 'applicant', 'status', 'applied_at', 'updated_at')
+    list_filter = ('status', 'applied_at')
+    search_fields = ('job__title', 'applicant__username', 'applicant__email', 'cover_letter', 'notes')

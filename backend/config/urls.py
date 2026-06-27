@@ -18,11 +18,25 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from apps.core.views import home_view
+from rest_framework.permissions import AllowAny
+from rest_framework.schemas import get_schema_view
+from apps.core.views import api_index, health_check, home_view
+
+schema_view = get_schema_view(
+    title='Traviona API',
+    description='Backend API schema for Traviona Consulting.',
+    version='0.1.0',
+    public=True,
+    authentication_classes=[],
+    permission_classes=[AllowAny],
+)
 
 urlpatterns = [
     path('', home_view, name='home'),
+    path('health/', health_check, name='health-check'),
     path('admin/', admin.site.urls),
+    path('api/', api_index, name='api-index'),
+    path('api/schema/', schema_view, name='api-schema'),
     path('api/users/', include('apps.users.urls')),
     path('api/website/', include('apps.website.urls')),
     path('api/insights/', include('apps.insights.urls')),

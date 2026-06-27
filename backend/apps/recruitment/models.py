@@ -57,11 +57,21 @@ class TalentProfile(models.Model):
 
 
 class JobApplication(models.Model):
+    STATUS_CHOICES = [
+        ('submitted', 'Submitted'),
+        ('reviewing', 'Reviewing'),
+        ('shortlisted', 'Shortlisted'),
+        ('rejected', 'Rejected'),
+        ('hired', 'Hired'),
+    ]
+
     job = models.ForeignKey(JobPosting, related_name='applications', on_delete=models.CASCADE)
     applicant = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='applications', on_delete=models.CASCADE)
     cover_letter = models.TextField(blank=True)
-    status = models.CharField(max_length=30, default='submitted')
+    notes = models.TextField(blank=True)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='submitted')
     applied_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('job', 'applicant')

@@ -1,13 +1,13 @@
 # Traviona
 
-Traviona is a Django-based platform for a modern consulting firm. It brings together a public-facing company presence, editorial content, and a recruitment and talent system into a single backend foundation designed for growth, deployment, and future product expansion.
+Traviona is a Django-based enterprise platform for a modern consulting firm. It unifies the firm’s public presence, editorial publishing, and recruitment operations into a scalable backend foundation designed for international deployment and long-term growth.
 
 ## Overview
-Traviona is built to support a consulting organization that needs to:
-- present its services, expertise, and brand professionally
-- publish thought leadership and market insights
-- manage hiring opportunities and talent profiles
-- operate from a scalable backend that can later support a full web application and API-driven experiences
+Traviona is designed to support a consulting organization that needs to:
+- present its services, expertise, and brand with a professional digital presence
+- publish thought leadership, market insights, and curated editorial content
+- manage recruitment pipelines and professional talent profiles at enterprise scale
+- operate from a robust backend that can support a full web application and API-driven services across teams and regions
 
 ## Core Product Areas
 ### 1. Company and website presence
@@ -101,7 +101,7 @@ python manage.py runserver
 ```
 
 ## Current Status
-The backend foundation is in place with modular apps, database migrations, authentication support, and initial content and recruitment models. The project is being built as a complete platform rather than a simple demo.
+The backend foundation is in place with modular applications, database migrations, authentication support, and structured content and recruitment models. The project is being built as a complete enterprise platform rather than a lightweight prototype.
 
 ## Documentation
 - [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) for implementation milestones and ongoing development notes
