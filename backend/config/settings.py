@@ -184,6 +184,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'apps.insights.tasks.sync_configured_external_insights_task',
         'schedule': 60 * 60,
     },
+    'sync-configured-external-jobs-every-six-hours': {
+        'task': 'apps.recruitment.tasks.sync_configured_external_jobs_task',
+        'schedule': 60 * 60 * 6,
+    },
 }
 
 CACHES = {

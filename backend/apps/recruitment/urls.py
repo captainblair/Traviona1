@@ -3,6 +3,8 @@ from .views import (
     ApplicationDetailView,
     ApplicationListView,
     ApplyToJobView,
+    ExternalJobSourceDetailView,
+    ExternalJobSourceListCreateView,
     JobDetailView,
     JobListView,
     MyTalentProfileView,
@@ -15,6 +17,8 @@ from .views import (
 
 urlpatterns = [
     path('dashboard/', RecruitmentDashboardView.as_view(), name='recruitment-dashboard'),
+    path('job-sources/', ExternalJobSourceListCreateView.as_view(), name='external-job-source-list'),
+    path('job-sources/<int:pk>/', ExternalJobSourceDetailView.as_view(), name='external-job-source-detail'),
     path('jobs/', JobListView.as_view(), name='job-list'),
     path('jobs/<slug:slug>/', JobDetailView.as_view(), name='job-detail'),
     path('jobs/<int:job_id>/apply/', ApplyToJobView.as_view(), name='apply-to-job'),

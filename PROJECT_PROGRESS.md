@@ -37,6 +37,7 @@ The backend foundation has been created and verified. The project now includes:
 - Insight taxonomy models, moderation statuses, external source configuration, provider ingestion, and scheduled Celery sync
 - Password change/reset flows, MFA setup/enable/disable, and Google/LinkedIn social-login token verification hooks
 - PostgreSQL/Redis/Celery Docker Compose services, CI workflow, env templates, cache/logging/security settings, and demo seed data
+- Configurable external job sources with provider fetchers, recruiter/admin source APIs, and scheduled Celery job ingestion
 - Verified Django system checks with no issues
 - A passing backend test suite covering core, auth, content, insights, and recruitment behavior
 
@@ -115,6 +116,7 @@ The following items are still pending from the planned architecture:
 - Add authentication-protected API endpoints [implemented for user profile, editorial, recruitment, and role-management workflows]
 - Add public OpenAPI schema/docs for frontend integration [implemented]
 - Connect external news/job ingestion services [partially implemented with configured insight sources and job sync service]
+- Add configurable external job source ingestion [implemented with Greenhouse, Lever, Workable, Ashby, Adzuna, Jooble, Remote OK, and custom JSON adapters]
 - Add Celery beat schedules for recurring automation [implemented for configured insight ingestion]
 - Add caching and performance optimization [implemented baseline cache configuration with Redis-compatible `CACHE_URL`]
 
@@ -188,6 +190,13 @@ The following items are still pending from the planned architecture:
 - Added `seed_demo_data` management command for frontend fixtures
 - Expanded `/api/` index with frontend-friendly route metadata
 - Increased test coverage from 50 to 55 backend tests
+
+## External Job Source Integration Milestone
+- Added `ExternalJobSource` model for storing provider, endpoint, env-key names, defaults, and sync timestamps
+- Added recruiter/admin APIs at `/api/recruitment/job-sources/`
+- Added provider adapters for Greenhouse, Lever, Workable, Ashby, Adzuna, Jooble, Remote OK, and generic JSON job feeds
+- Added configured job sync service plus Celery task and six-hour Celery Beat schedule
+- Added job API key placeholders to `.env.example` and `EXTERNAL_APIS.md`
 
 ## Notes for Future Updates
 This file should be updated whenever:

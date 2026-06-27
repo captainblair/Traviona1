@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ApplicationStatusHistory, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
+from .models import ApplicationStatusHistory, ExternalJobSource, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
 
 
 @admin.register(JobPosting)
@@ -7,6 +7,13 @@ class JobPostingAdmin(admin.ModelAdmin):
     list_display = ('title', 'location', 'employment_type', 'is_active', 'created_at')
     prepopulated_fields = {'slug': ('title',)}
     search_fields = ('title', 'summary', 'description')
+
+
+@admin.register(ExternalJobSource)
+class ExternalJobSourceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'provider', 'is_active', 'last_synced_at', 'created_at')
+    list_filter = ('provider', 'is_active')
+    search_fields = ('name', 'endpoint_url')
 
 
 @admin.register(TalentProfile)

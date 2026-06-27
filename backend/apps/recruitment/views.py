@@ -5,8 +5,8 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.core.permissions import IsRecruiterRole, has_role
-from .models import ApplicationStatusHistory, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
-from .serializers import JobApplicationSerializer, JobPostingSerializer, RecruitmentNotificationSerializer, TalentProfileSerializer
+from .models import ApplicationStatusHistory, ExternalJobSource, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
+from .serializers import ExternalJobSourceSerializer, JobApplicationSerializer, JobPostingSerializer, RecruitmentNotificationSerializer, TalentProfileSerializer
 
 User = get_user_model()
 
@@ -36,6 +36,18 @@ class JobDetailView(generics.RetrieveAPIView):
     serializer_class = JobPostingSerializer
     lookup_field = 'slug'
     permission_classes = [permissions.AllowAny]
+
+
+class ExternalJobSourceListCreateView(generics.ListCreateAPIView):
+    queryset = ExternalJobSource.objects.all()
+    serializer_class = ExternalJobSourceSerializer
+    permission_classes = [IsRecruiterRole]
+
+
+class ExternalJobSourceDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ExternalJobSource.objects.all()
+    serializer_class = ExternalJobSourceSerializer
+    permission_classes = [IsRecruiterRole]
 
 
 class TalentProfileListView(generics.ListAPIView):

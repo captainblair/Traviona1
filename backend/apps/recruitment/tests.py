@@ -1,10 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from unittest.mock import patch
 from rest_framework.test import APIClient
 
-from apps.recruitment.models import ApplicationStatusHistory, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
-from apps.recruitment.services import sync_external_jobs
+from apps.recruitment.models import ApplicationStatusHistory, ExternalJobSource, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
+from apps.recruitment.services import fetch_custom_json_jobs, fetch_greenhouse_jobs, sync_configured_external_jobs, sync_external_jobs
+from apps.recruitment.tasks import sync_configured_external_jobs_task, sync_external_jobs_task
 
 User = get_user_model()
 
@@ -22,6 +24,99 @@ class ExternalJobSyncTests(TestCase):
         self.assertEqual(job.source_name, 'Greenhouse')
         self.assertEqual(job.external_id, 'gh-123')
         self.assertEqual(job.raw_payload['title'], 'Senior Consultant')
+
+    def test_custom_json_fetcher_maps_generic_results(self):
+        source = ExternalJobSource.objects.create(
+            name='Custom Feed',
+            provider='custom_json',
+            endpoint_url='https://jobs.example.com/feed',
+            default_location='Remote',
+        )
+
+        with patch('apps.recruitment.services._read_json_url') as read_json:
+            read_json.return_value = {
+                'results': [
+                    {
+                        'id': 'custom-1',
+                        'title': 'Policy Analyst',
+                        'description': 'Policy research role',
+                        'url': 'https://jobs.example.com/custom-1',
+                    }
+                ]
+            }
+            payloads = fetch_custom_json_jobs(source)
+
+        self.assertEqual(len(payloads), 1)
+        self.assertEqual(payloads[0]['title'], 'Policy Analyst')
+        self.assertEqual(payloads[0]['location'], 'Remote')
+        self.assertEqual(payloads[0]['external_id'], 'custom-1')
+
+    def test_greenhouse_fetcher_maps_jobs(self):
+        source = ExternalJobSource.objects.create(
+            name='Greenhouse Feed',
+            provider='greenhouse',
+            endpoint_url='https://boards.greenhouse.io/example/jobs',
+        )
+
+        with patch('apps.recruitment.services._read_json_url') as read_json:
+            read_json.return_value = {
+                'jobs': [
+                    {
+                        'id': 123,
+                        'title': 'Senior Consultant',
+                        'content': 'Consulting role',
+                        'absolute_url': 'https://boards.greenhouse.io/example/jobs/123',
+                        'location': {'name': 'Nairobi'},
+                    }
+                ]
+            }
+            payloads = fetch_greenhouse_jobs(source)
+
+        self.assertEqual(payloads[0]['title'], 'Senior Consultant')
+        self.assertEqual(payloads[0]['location'], 'Nairobi')
+        self.assertEqual(payloads[0]['external_id'], '123')
+
+    def test_configured_external_job_sync_updates_source_timestamp(self):
+        source = ExternalJobSource.objects.create(
+            name='Configured Feed',
+            provider='custom_json',
+            endpoint_url='https://jobs.example.com/configured',
+        )
+
+        with patch('apps.recruitment.services.fetch_external_job_source_payloads') as fetch_payloads:
+            fetch_payloads.return_value = [
+                {
+                    'title': 'Configured Job',
+                    'summary': 'Imported role',
+                    'source_url': 'https://jobs.example.com/configured-job',
+                    'external_id': 'configured-1',
+                }
+            ]
+            created = sync_configured_external_jobs()
+
+        source.refresh_from_db()
+        self.assertEqual(created, 1)
+        self.assertIsNotNone(source.last_synced_at)
+        self.assertTrue(JobPosting.objects.filter(external_id='configured-1').exists())
+
+    def test_external_jobs_task_returns_created_count(self):
+        created = sync_external_jobs_task([
+            {
+                'title': 'Task Job',
+                'source_name': 'Task Feed',
+                'source_url': 'https://jobs.example.com/task-job',
+                'external_id': 'task-job-1',
+            }
+        ])
+
+        self.assertEqual(created, 1)
+        self.assertTrue(JobPosting.objects.filter(external_id='task-job-1').exists())
+
+    def test_configured_external_jobs_task_runs_sync(self):
+        with patch('apps.recruitment.tasks.sync_configured_external_jobs') as sync_jobs:
+            sync_jobs.return_value = 3
+
+            self.assertEqual(sync_configured_external_jobs_task(), 3)
 
 
 class RecruitmentPermissionTests(TestCase):
@@ -53,6 +148,31 @@ class RecruitmentPermissionTests(TestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertTrue(JobPosting.objects.filter(title='Operations Analyst').exists())
+
+    def test_recruiter_can_manage_external_job_sources(self):
+        recruiter = User.objects.create_user(username='source-recruiter', password='StrongPass123!', role='recruiter')
+        self.client.force_authenticate(user=recruiter)
+
+        create_response = self.client.post(reverse('external-job-source-list'), {
+            'name': 'Remote OK',
+            'provider': 'remoteok',
+            'endpoint_url': 'https://remoteok.com/api',
+            'default_employment_type': 'remote',
+            'is_active': True,
+        }, format='json')
+        list_response = self.client.get(reverse('external-job-source-list'))
+
+        self.assertEqual(create_response.status_code, 201)
+        self.assertEqual(list_response.status_code, 200)
+        self.assertEqual(list_response.json()['results'][0]['provider'], 'remoteok')
+
+    def test_non_recruiter_cannot_manage_external_job_sources(self):
+        user = User.objects.create_user(username='not-source-recruiter', password='StrongPass123!')
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(reverse('external-job-source-list'))
+
+        self.assertEqual(response.status_code, 403)
 
     def test_job_and_talent_lists_are_public(self):
         JobPosting.objects.create(title='Public Job', summary='Visible role')

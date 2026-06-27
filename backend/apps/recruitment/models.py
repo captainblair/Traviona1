@@ -36,6 +36,36 @@ class JobPosting(models.Model):
         return self.title
 
 
+class ExternalJobSource(models.Model):
+    PROVIDER_CHOICES = [
+        ('greenhouse', 'Greenhouse'),
+        ('lever', 'Lever'),
+        ('workable', 'Workable'),
+        ('ashby', 'Ashby'),
+        ('adzuna', 'Adzuna'),
+        ('jooble', 'Jooble'),
+        ('remoteok', 'Remote OK'),
+        ('custom_json', 'Custom JSON'),
+    ]
+
+    name = models.CharField(max_length=120)
+    provider = models.CharField(max_length=30, choices=PROVIDER_CHOICES, default='custom_json')
+    endpoint_url = models.URLField()
+    api_key_env = models.CharField(max_length=100, blank=True)
+    api_secret_env = models.CharField(max_length=100, blank=True)
+    default_location = models.CharField(max_length=200, blank=True)
+    default_employment_type = models.CharField(max_length=30, choices=JobPosting.EMPLOYMENT_TYPE_CHOICES, default='full_time')
+    is_active = models.BooleanField(default=True)
+    last_synced_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class TalentProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
     full_name = models.CharField(max_length=250)

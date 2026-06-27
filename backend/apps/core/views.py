@@ -33,6 +33,7 @@ def api_index(request):
                 'sources': '/api/insights/sources/',
             },
             'recruitment': {
+                'job_sources': '/api/recruitment/job-sources/',
                 'jobs': '/api/recruitment/jobs/',
                 'talents': '/api/recruitment/talents/',
                 'my_talent_profile': '/api/recruitment/talents/me/',

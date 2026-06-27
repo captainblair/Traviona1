@@ -1,11 +1,30 @@
 from rest_framework import serializers
-from .models import ApplicationStatusHistory, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
+from .models import ApplicationStatusHistory, ExternalJobSource, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
 
 
 class JobPostingSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobPosting
         fields = ['id', 'title', 'slug', 'summary', 'description', 'location', 'employment_type', 'salary_range', 'experience_level', 'is_active', 'created_at']
+
+
+class ExternalJobSourceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExternalJobSource
+        fields = [
+            'id',
+            'name',
+            'provider',
+            'endpoint_url',
+            'api_key_env',
+            'api_secret_env',
+            'default_location',
+            'default_employment_type',
+            'is_active',
+            'last_synced_at',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'last_synced_at', 'created_at']
 
 
 class TalentProfileSerializer(serializers.ModelSerializer):
