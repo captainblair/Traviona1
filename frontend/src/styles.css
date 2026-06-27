@@ -4,7 +4,7 @@
 
 :root {
   color-scheme: light;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-family: Poppins, ui-sans-serif, system-ui, sans-serif;
   background: #f7f3ea;
 }
 
@@ -27,11 +27,11 @@ body {
 #root {
   width: 100%;
   max-width: 100%;
-  overflow-x: clip;
 }
 
 * {
   box-sizing: border-box;
+  min-width: 0;
 }
 
 img,
@@ -67,6 +67,16 @@ canvas {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-copy,
+  .reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 

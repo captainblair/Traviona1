@@ -74,8 +74,8 @@ function Header() {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className="absolute inset-x-0 top-0 z-30">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
+    <header className="absolute inset-x-0 top-0 z-30 w-full">
+      <nav className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-5 sm:px-8 lg:px-10">
         <a href="#home" className="flex items-center gap-3 text-white" onClick={closeMenu}>
           <span className="grid h-9 w-9 place-items-center rounded-full border border-tide/60 bg-tide/15">
             <Globe2 className="h-5 w-5 text-tide" aria-hidden="true" />
@@ -113,7 +113,7 @@ function Header() {
       {isMenuOpen && (
         <div
           id="mobile-navigation"
-          className="mx-5 overflow-hidden rounded-lg border border-white/12 bg-ink/92 text-white shadow-soft backdrop-blur sm:mx-8 md:hidden"
+          className="mx-4 rounded-lg border border-white/12 bg-ink/95 text-white shadow-soft backdrop-blur sm:mx-8 md:hidden"
         >
           <div className="flex flex-col px-4 py-3">
             {navItems.map((item) => (
@@ -142,7 +142,7 @@ function Header() {
 
 function Hero() {
   return (
-    <section id="home" className="relative min-h-[88vh] w-full overflow-hidden bg-ink text-white">
+    <section id="home" className="relative w-full bg-ink text-white sm:min-h-[88vh]">
       <img
         src="/images/homepage1.jpg"
         alt=""
@@ -154,28 +154,28 @@ function Hero() {
 
       <Header />
 
-      <div className="relative z-10 mx-auto flex min-h-[88vh] w-full max-w-7xl items-center px-5 pb-16 pt-28 sm:px-8 lg:px-10">
-        <div className="hero-copy max-w-3xl min-w-0">
-          <p className="mb-5 inline-flex border-l-2 border-tide pl-4 text-sm font-semibold uppercase tracking-[0.22em] text-tide">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center px-4 pb-14 pt-32 sm:min-h-[88vh] sm:px-8 sm:pb-16 lg:px-10">
+        <div className="hero-copy w-full max-w-3xl min-w-0 break-words">
+          <p className="mb-5 inline-flex max-w-full border-l-2 border-tide pl-4 text-xs font-semibold uppercase tracking-[0.08em] text-tide sm:text-sm sm:tracking-[0.22em]">
             International advisory
           </p>
-          <h1 className="font-display text-4xl font-bold leading-tight text-white sm:text-6xl lg:text-7xl">
+          <h1 className="max-w-full text-balance font-display text-4xl font-bold leading-[1.08] text-white sm:text-6xl lg:text-7xl">
             Shaping Tomorrow&apos;s Global Landscape
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-mist sm:text-xl">
+          <p className="mt-6 max-w-2xl text-base leading-7 text-mist sm:text-xl sm:leading-8">
             Strategic international business consulting and political insights for a complex world.
           </p>
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
             <a
               href="#about"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-tide px-7 py-4 text-sm font-bold text-ink shadow-soft transition hover:bg-white"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-tide px-6 py-4 text-sm font-bold text-ink shadow-soft transition hover:bg-white sm:w-auto sm:px-7"
             >
               Our Story
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </a>
             <a
               href="#services"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-7 py-4 text-sm font-bold text-white transition hover:border-tide hover:text-tide"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-4 text-sm font-bold text-white transition hover:border-tide hover:text-tide sm:w-auto sm:px-7"
             >
               Discover Services
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -189,17 +189,17 @@ function Hero() {
 
 function Services() {
   return (
-    <RevealSection id="services" className="w-full overflow-hidden bg-white px-5 py-16 sm:px-8 lg:px-10">
+    <RevealSection id="services" className="w-full bg-white px-4 py-14 sm:px-8 sm:py-16 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
         <div className="max-w-2xl pl-0 md:pl-8">
           <h2 className="font-display text-3xl font-bold text-ink">What We Do</h2>
         </div>
 
-        <div className="mt-8 grid min-w-0 gap-5 md:grid-cols-3 xl:grid-cols-5">
+        <div className="mt-8 grid w-full min-w-0 grid-cols-1 gap-5 md:grid-cols-3 xl:grid-cols-5">
           {services.map(({ title, text, image }) => (
             <article
               key={title}
-              className="rounded-md border border-ink/5 bg-white p-5 shadow-[0_14px_38px_rgba(7,19,31,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_48px_rgba(7,19,31,0.13)]"
+              className="w-full min-w-0 rounded-md border border-ink/5 bg-white p-5 shadow-[0_14px_38px_rgba(7,19,31,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_48px_rgba(7,19,31,0.13)]"
             >
               <img
                 src={image}
@@ -207,8 +207,8 @@ function Services() {
                 className="h-9 w-9 rounded object-cover ring-1 ring-ink/5"
                 aria-hidden="true"
               />
-              <h3 className="mt-5 min-h-[3rem] font-display text-lg font-bold leading-6 text-ink">{title}</h3>
-              <p className="mt-3 min-h-[4.5rem] text-xs leading-5 text-ink/62">{text}</p>
+              <h3 className="mt-5 break-words font-display text-lg font-bold leading-6 text-ink sm:min-h-[3rem]">{title}</h3>
+              <p className="mt-3 text-xs leading-5 text-ink/62 sm:min-h-[4.5rem]">{text}</p>
               <a href="#services" className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-harbor">
                 Learn More
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -223,25 +223,27 @@ function Services() {
 
 function InsightBand() {
   return (
-    <RevealSection id="about" className="w-full overflow-hidden bg-white px-5 py-20 sm:px-8 lg:px-10">
-      <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+    <RevealSection id="about" className="w-full bg-white px-4 py-14 sm:px-8 sm:py-20 lg:px-10">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <div className="min-w-0">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-brass">Our Story</p>
-          <h2 className="mt-3 font-display text-4xl font-bold text-ink">Built for leaders navigating shifting realities</h2>
-          <p className="mt-5 max-w-2xl text-base leading-8 text-ink/70">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-brass sm:text-sm sm:tracking-[0.2em]">Our Story</p>
+          <h2 className="mt-3 text-balance font-display text-3xl font-bold leading-tight text-ink sm:text-4xl">
+            Built for leaders navigating shifting realities
+          </h2>
+          <p className="mt-5 max-w-2xl text-sm leading-7 text-ink/70 sm:text-base sm:leading-8">
             Traviona brings together strategic consulting, political intelligence, and operational talent for organizations
             making decisions across markets, institutions, and communities.
           </p>
         </div>
-        <div className="grid min-w-0 grid-cols-1 gap-4 text-center sm:grid-cols-3">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-4 text-center sm:grid-cols-3">
           {[
             ['50+', 'Countries monitored'],
             ['10+', 'Years experience'],
             ['200+', 'Strategic engagements'],
           ].map(([value, label]) => (
-            <div key={label} className="rounded-lg border border-ink/10 bg-mist/40 p-6">
+            <div key={label} className="min-w-0 rounded-lg border border-ink/10 bg-mist/40 p-6">
               <p className="font-display text-4xl font-bold text-harbor">{value}</p>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-ink/60">{label}</p>
+              <p className="mt-2 break-words text-xs font-semibold uppercase tracking-[0.08em] text-ink/60 sm:tracking-[0.14em]">{label}</p>
             </div>
           ))}
         </div>
@@ -252,18 +254,20 @@ function InsightBand() {
 
 function CareersBand() {
   return (
-    <RevealSection id="careers" className="w-full overflow-hidden bg-midnight px-5 py-20 text-white sm:px-8 lg:px-10">
+    <RevealSection id="careers" className="w-full bg-midnight px-4 py-14 text-white sm:px-8 sm:py-20 lg:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
         <div className="max-w-2xl min-w-0">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-tide">Careers</p>
-          <h2 className="mt-3 font-display text-4xl font-bold">Join work that crosses borders and disciplines</h2>
-          <p className="mt-5 text-base leading-8 text-white/70">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-tide sm:text-sm sm:tracking-[0.2em]">Careers</p>
+          <h2 className="mt-3 text-balance font-display text-3xl font-bold leading-tight sm:text-4xl">
+            Join work that crosses borders and disciplines
+          </h2>
+          <p className="mt-5 text-sm leading-7 text-white/70 sm:text-base sm:leading-8">
             Explore advisory roles, research assignments, and talent network opportunities with Traviona.
           </p>
         </div>
         <a
           href="#talent-network"
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 text-sm font-bold text-ink transition hover:bg-tide"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-sm font-bold text-ink transition hover:bg-tide sm:w-auto sm:px-7"
         >
           <BriefcaseBusiness className="h-4 w-4" aria-hidden="true" />
           View Careers
@@ -275,13 +279,17 @@ function CareersBand() {
 
 function TalentNetworkBand() {
   return (
-    <RevealSection id="talent-network" className="w-full overflow-hidden bg-ivory px-5 py-20 sm:px-8 lg:px-10">
-      <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+    <RevealSection id="talent-network" className="w-full bg-ivory px-4 py-14 sm:px-8 sm:py-20 lg:px-10">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
         <div className="min-w-0">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-harbor">Talent Network</p>
-          <h2 className="mt-3 font-display text-4xl font-bold text-ink">Expert teams assembled around the assignment</h2>
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-harbor sm:text-sm sm:tracking-[0.2em]">
+            Talent Network
+          </p>
+          <h2 className="mt-3 text-balance font-display text-3xl font-bold leading-tight text-ink sm:text-4xl">
+            Expert teams assembled around the assignment
+          </h2>
         </div>
-        <p className="max-w-3xl text-base leading-8 text-ink/70">
+        <p className="max-w-3xl text-sm leading-7 text-ink/70 sm:text-base sm:leading-8">
           Traviona connects clients with analysts, advisors, and project specialists who bring regional fluency and
           practical execution support to high-stakes initiatives.
         </p>
@@ -292,7 +300,7 @@ function TalentNetworkBand() {
 
 function Footer() {
   return (
-    <footer id="contact" className="w-full overflow-hidden bg-ink px-5 py-10 text-white sm:px-8 lg:px-10">
+    <footer id="contact" className="w-full bg-ink px-4 py-10 text-white sm:px-8 lg:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <span className="grid h-9 w-9 place-items-center rounded-full border border-tide/60 bg-tide/15">
@@ -308,7 +316,7 @@ function Footer() {
 
 export default function App() {
   return (
-    <main className="min-h-screen overflow-x-clip bg-white text-ink">
+    <main className="min-h-screen w-full bg-white text-ink">
       <Hero />
       <Services />
       <InsightBand />

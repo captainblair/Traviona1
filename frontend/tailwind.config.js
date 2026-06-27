@@ -13,8 +13,8 @@ export default {
         brass: '#c89b56',
       },
       fontFamily: {
-        display: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         soft: '0 18px 60px rgba(7, 19, 31, 0.14)',
