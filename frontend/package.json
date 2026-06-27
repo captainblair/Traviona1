@@ -12,9 +12,10 @@
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.0",
     "lucide-react": "^0.468.0",
-    "vite": "^6.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.18.0",
+    "vite": "^6.0.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",

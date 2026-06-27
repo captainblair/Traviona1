@@ -11,7 +11,10 @@ __pycache__/
 .DS_Store
 .idea/
 .vscode/
+
+# Local design references — keep on disk, never commit or push
 traviona images/
 Traviona wireframes/
+
 frontend/node_modules/
 frontend/dist/
