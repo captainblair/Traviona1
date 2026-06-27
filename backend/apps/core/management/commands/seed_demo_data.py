@@ -64,7 +64,7 @@ class Command(BaseCommand):
         )
         ContactInformation.objects.update_or_create(
             label='Main office',
-            defaults={'email': 'hello@traviona.local', 'phone': '+254 700 000 000', 'address': 'Nairobi, Kenya', 'is_active': True},
+            defaults={'email': 'info@travionaconsulting.com', 'phone': '+254 700 000 000', 'address': 'Nairobi, Kenya', 'is_active': True},
         )
         GlobalPresence.objects.update_or_create(
             region='East Africa',

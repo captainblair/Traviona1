@@ -123,6 +123,30 @@ class ContactInformation(models.Model):
         return self.label
 
 
+class ContactEnquiry(models.Model):
+    TOPIC_CHOICES = [
+        ('general', 'General enquiry'),
+        ('advisory', 'Advisory services'),
+        ('careers', 'Careers'),
+        ('talent', 'Talent network'),
+        ('media', 'Media & press'),
+    ]
+
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    company = models.CharField(max_length=200, blank=True)
+    topic = models.CharField(max_length=30, choices=TOPIC_CHOICES, default='general')
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.full_name} — {self.get_topic_display()}'
+
+
 class GlobalPresence(models.Model):
     region = models.CharField(max_length=200)
     summary = models.TextField(blank=True)

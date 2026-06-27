@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (
     AboutPageView,
+    ContactEnquiryCreateView,
     ContactInformationView,
     GlobalPresenceListView,
     HomePageView,
@@ -16,5 +17,6 @@ urlpatterns = [
     path('services/<slug:slug>/', ServiceDetailView.as_view(), name='service-detail'),
     path('leadership/', LeadershipMemberListView.as_view(), name='leadership-list'),
     path('contact/', ContactInformationView.as_view(), name='contact-information'),
+    path('contact/enquiries/', ContactEnquiryCreateView.as_view(), name='contact-enquiry-create'),
     path('global-presence/', GlobalPresenceListView.as_view(), name='global-presence-list'),
 ]

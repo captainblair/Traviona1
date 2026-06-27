@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Users,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Footer from '../components/Footer.jsx';
 import PageHero from '../components/PageHero.jsx';
 import { RevealItem, RevealSection } from '../components/reveal.jsx';
@@ -294,12 +295,12 @@ export default function AboutPage() {
             <p className="mt-3 text-sm leading-7 text-white/70">
               Partner with Traviona for strategic counsel and global insights.
             </p>
-            <a
-              href="#contact"
+            <Link
+              to="/contact"
               className="mt-6 inline-flex items-center justify-center rounded-full bg-tide px-8 py-4 text-sm font-bold text-ink transition hover:bg-white"
             >
               Contact Us
-            </a>
+            </Link>
           </div>
         </div>
       </RevealSection>
@@ -350,12 +351,12 @@ export default function AboutPage() {
           <p className="mt-4 text-sm leading-7 text-ink/65 sm:text-base">
             Partner with Traviona for strategic counsel, global insights, and specialist talent aligned to your mission.
           </p>
-          <a
-            href="#contact"
+          <Link
+            to="/contact"
             className="mt-8 inline-flex items-center justify-center rounded-full bg-tide px-8 py-4 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white"
           >
             Contact Us
-          </a>
+          </Link>
         </div>
       </section>
 

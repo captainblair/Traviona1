@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AboutPage, ContactInformation, GlobalPresence, HomePage, HomePageSection, LeadershipMember, Service
+from .models import AboutPage, ContactEnquiry, ContactInformation, GlobalPresence, HomePage, HomePageSection, LeadershipMember, Service
 
 
 class AboutPageSerializer(serializers.ModelSerializer):
@@ -101,6 +101,13 @@ class ContactInformationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactInformation
         fields = ['id', 'label', 'email', 'phone', 'address', 'linkedin_url', 'updated_at']
+
+
+class ContactEnquirySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactEnquiry
+        fields = ['id', 'full_name', 'email', 'company', 'topic', 'message', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
 
 class GlobalPresenceSerializer(serializers.ModelSerializer):

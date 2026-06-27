@@ -1,8 +1,9 @@
 from django.http import Http404
 from rest_framework import generics, permissions
-from .models import AboutPage, ContactInformation, GlobalPresence, HomePage, LeadershipMember, Service
+from .models import AboutPage, ContactEnquiry, ContactInformation, GlobalPresence, HomePage, LeadershipMember, Service
 from .serializers import (
     AboutPageSerializer,
+    ContactEnquirySerializer,
     ContactInformationSerializer,
     GlobalPresenceSerializer,
     HomePageSerializer,
@@ -54,6 +55,12 @@ class LeadershipMemberListView(generics.ListAPIView):
 class ContactInformationView(LatestActiveMixin, generics.RetrieveAPIView):
     queryset = ContactInformation.objects.filter(is_active=True)
     serializer_class = ContactInformationSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class ContactEnquiryCreateView(generics.CreateAPIView):
+    queryset = ContactEnquiry.objects.all()
+    serializer_class = ContactEnquirySerializer
     permission_classes = [permissions.AllowAny]
 
 

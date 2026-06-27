@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AboutPage, ContactInformation, GlobalPresence, HomePage, HomePageSection, LeadershipMember, Service
+from .models import AboutPage, ContactEnquiry, ContactInformation, GlobalPresence, HomePage, HomePageSection, LeadershipMember, Service
 
 
 @admin.register(AboutPage)
@@ -50,6 +50,14 @@ class LeadershipMemberAdmin(admin.ModelAdmin):
 @admin.register(ContactInformation)
 class ContactInformationAdmin(admin.ModelAdmin):
     list_display = ('label', 'email', 'phone', 'is_active', 'updated_at')
+
+
+@admin.register(ContactEnquiry)
+class ContactEnquiryAdmin(admin.ModelAdmin):
+    list_display = ('full_name', 'email', 'topic', 'is_read', 'created_at')
+    list_filter = ('topic', 'is_read', 'created_at')
+    search_fields = ('full_name', 'email', 'company', 'message')
+    readonly_fields = ('full_name', 'email', 'company', 'topic', 'message', 'created_at')
 
 
 @admin.register(GlobalPresence)

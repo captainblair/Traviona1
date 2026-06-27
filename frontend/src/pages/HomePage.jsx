@@ -1,4 +1,5 @@
 import { ArrowRight, BriefcaseBusiness } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero.jsx';
 import { RevealItem, RevealSection } from '../components/reveal.jsx';
 
@@ -119,13 +120,13 @@ export default function HomePage() {
               Explore advisory roles, research assignments, and talent network opportunities with Traviona.
             </p>
           </div>
-          <a
-            href="#talent-network"
+          <Link
+            to="/careers"
             className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-4 text-sm font-bold text-ink transition hover:bg-tide sm:w-auto sm:px-7"
           >
             <BriefcaseBusiness className="h-4 w-4" aria-hidden="true" />
             View Careers
-          </a>
+          </Link>
         </div>
       </RevealSection>
 
@@ -143,6 +144,13 @@ export default function HomePage() {
             Traviona connects clients with analysts, advisors, and project specialists who bring regional fluency and
             practical execution support to high-stakes initiatives.
           </p>
+          <Link
+            to="/talent-network"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-tide px-6 py-4 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white sm:w-auto sm:px-7 lg:justify-self-end"
+          >
+            Browse Experts
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
         </div>
       </RevealSection>
     </>
