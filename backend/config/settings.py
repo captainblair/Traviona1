@@ -25,6 +25,12 @@ env = environ.Env(
     SECRET_KEY=(str, 'django-insecure-&5ow*)dq_6s^0-39_c1dc4fcwhzx7ten$0qmgz=6oem=tqud%j'),
     ALLOWED_HOSTS=(list, ['localhost', '127.0.0.1']),
     DATABASE_URL=(str, 'sqlite:///db.sqlite3'),
+    FRONTEND_URL=(str, 'http://localhost:3000'),
+    EMAIL_BACKEND=(str, 'django.core.mail.backends.console.EmailBackend'),
+    DEFAULT_FROM_EMAIL=(str, 'no-reply@traviona.local'),
+    SECURE_SSL_REDIRECT=(bool, False),
+    SESSION_COOKIE_SECURE=(bool, False),
+    CSRF_COOKIE_SECURE=(bool, False),
 )
 
 environ.Env.read_env(BASE_DIR / '.env')
@@ -34,6 +40,7 @@ DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=['http://localhost:3000', 'http://127.0.0.1:3000'])
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=['http://localhost:3000', 'http://127.0.0.1:3000'])
+FRONTEND_URL = env('FRONTEND_URL')
 
 
 # Application definition
@@ -91,7 +98,9 @@ DATABASES = {
 }
 
 if DATABASES['default']['ENGINE'].endswith('postgresql'):
-    DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
+    DATABASES['default']['CONN_MAX_AGE'] = env.int('DATABASE_CONN_MAX_AGE', default=60)
+    if env.bool('DATABASE_SSL_REQUIRE', default=False):
+        DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
 
 
 # Password validation
@@ -135,6 +144,15 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+EMAIL_BACKEND = env('EMAIL_BACKEND')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
+EMAIL_HOST = env('EMAIL_HOST', default='localhost')
+EMAIL_PORT = env.int('EMAIL_PORT', default=25)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=False)
+EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', default=False)
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -165,5 +183,46 @@ CELERY_BEAT_SCHEDULE = {
     'sync-configured-external-insights-hourly': {
         'task': 'apps.insights.tasks.sync_configured_external_insights_task',
         'schedule': 60 * 60,
+    },
+}
+
+CACHES = {
+    'default': env.cache('CACHE_URL', default='locmemcache://traviona')
+}
+
+SECURE_SSL_REDIRECT = env('SECURE_SSL_REDIRECT')
+SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
+CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
+SECURE_HSTS_SECONDS = env.int('SECURE_HSTS_SECONDS', default=0)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=False)
+SECURE_HSTS_PRELOAD = env.bool('SECURE_HSTS_PRELOAD', default=False)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '[{levelname}] {asctime} {name}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': env('LOG_LEVEL', default='INFO'),
+    },
+    'loggers': {
+        'django.server': {
+            'handlers': ['console'],
+            'level': env('DJANGO_SERVER_LOG_LEVEL', default='INFO'),
+            'propagate': False,
+        },
     },
 }

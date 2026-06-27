@@ -6,6 +6,8 @@ __pycache__/
 *.db
 .env
 .env.*
+!.env.example
+!backend/.env.example
 .DS_Store
 .idea/
 .vscode/

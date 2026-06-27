@@ -16,6 +16,10 @@ class User(AbstractUser):
     location = models.CharField(max_length=200, blank=True)
     headline = models.CharField(max_length=250, blank=True)
     role = models.CharField(max_length=30, choices=ROLE_CHOICES, default='public')
+    mfa_secret = models.CharField(max_length=64, blank=True)
+    mfa_enabled = models.BooleanField(default=False)
+    social_provider = models.CharField(max_length=30, blank=True)
+    social_uid = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.get_full_name() or self.username

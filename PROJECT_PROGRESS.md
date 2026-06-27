@@ -35,6 +35,8 @@ The backend foundation has been created and verified. The project now includes:
 - Richer website content APIs with homepage sections, service detail pages, and SEO metadata
 - Recruiter dashboard summaries, talent search/filtering, application status history, and in-app recruitment notifications
 - Insight taxonomy models, moderation statuses, external source configuration, provider ingestion, and scheduled Celery sync
+- Password change/reset flows, MFA setup/enable/disable, and Google/LinkedIn social-login token verification hooks
+- PostgreSQL/Redis/Celery Docker Compose services, CI workflow, env templates, cache/logging/security settings, and demo seed data
 - Verified Django system checks with no issues
 - A passing backend test suite covering core, auth, content, insights, and recruitment behavior
 
@@ -70,8 +72,8 @@ The following items are still pending from the planned architecture:
 - User registration and login flow [implemented]
 - Role-based access control for public, talent, recruiter, content editor, and admin [partially implemented with model roles, reusable permission helpers, and endpoint-level checks]
 - Centralized reusable DRF permission classes for admin, recruiter, and content editor roles [implemented]
-- Social login integration for Google and LinkedIn [pending]
-- Optional MFA and security hardening [pending]
+- Social login integration for Google and LinkedIn [implemented as access-token verification hooks for frontend OAuth flows]
+- Optional MFA and security hardening [implemented with TOTP MFA, password reset/change, and environment-driven security settings]
 
 ### Recruitment & talent platform
 - Job posting model expanded with salary, location, and experience fields [implemented]
@@ -114,14 +116,14 @@ The following items are still pending from the planned architecture:
 - Add public OpenAPI schema/docs for frontend integration [implemented]
 - Connect external news/job ingestion services [partially implemented with configured insight sources and job sync service]
 - Add Celery beat schedules for recurring automation [implemented for configured insight ingestion]
-- Add caching and performance optimization
+- Add caching and performance optimization [implemented baseline cache configuration with Redis-compatible `CACHE_URL`]
 
 ### Deployment and production readiness
-- Move from SQLite to PostgreSQL
-- Expand Docker support with PostgreSQL and Celery worker services
-- Add environment-based configuration
-- Add CI/CD pipeline
-- Add monitoring, logging, and security settings
+- Move from SQLite to PostgreSQL [implemented in Docker Compose while keeping SQLite local fallback]
+- Expand Docker support with PostgreSQL and Celery worker services [implemented]
+- Add environment-based configuration [implemented with `.env.example`]
+- Add CI/CD pipeline [implemented GitHub Actions backend check/test workflow]
+- Add monitoring, logging, and security settings [implemented baseline console logging and security headers/cookie env toggles]
 
 ## Latest Foundation Cleanup
 - Fixed public/private API boundaries for the current MVP endpoints
@@ -173,6 +175,20 @@ The following items are still pending from the planned architecture:
 - Expanded Docker Compose with Celery worker and Celery Beat services
 - Increased test coverage from 35 to 50 backend tests
 
+## Auth, Deployment & Frontend Readiness Milestone
+- Added password change, password reset request, and password reset confirm endpoints
+- Added TOTP MFA setup, enable, and disable endpoints
+- Added Google and LinkedIn social-login token verification hooks for frontend OAuth flows
+- Added user profile patch support at `/api/users/me/`
+- Added PostgreSQL and Redis services to Docker Compose
+- Added Redis-compatible cache configuration through `CACHE_URL`
+- Added environment-driven email, frontend URL, CORS/CSRF, security, logging, and database settings
+- Added `.env.example` and external API credential documentation
+- Added GitHub Actions backend CI for checks and tests
+- Added `seed_demo_data` management command for frontend fixtures
+- Expanded `/api/` index with frontend-friendly route metadata
+- Increased test coverage from 50 to 55 backend tests
+
 ## Notes for Future Updates
 This file should be updated whenever:
 - a major feature is completed
@@ -181,4 +197,4 @@ This file should be updated whenever:
 - the scope of the backend changes significantly
 
 ## Next Recommended Step
-The next recommended milestone is auth/security, deployment hardening, and frontend readiness polish: social login/MFA, PostgreSQL Docker support, CI/CD, caching, response contract consistency, and seed data.
+The next recommended step is frontend planning/build: use the wireframes and local reference images to define the first React/Next.js screens against the completed backend API.

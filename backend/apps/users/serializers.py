@@ -7,8 +7,8 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "first_name", "last_name", "phone", "bio", "location", "headline", "role"]
-        read_only_fields = ["id", "role"]
+        fields = ["id", "username", "email", "first_name", "last_name", "phone", "bio", "location", "headline", "role", "mfa_enabled", "social_provider"]
+        read_only_fields = ["id", "role", "mfa_enabled", "social_provider"]
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -29,3 +29,30 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
+    mfa_code = serializers.CharField(required=False, allow_blank=True, write_only=True)
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField(required=True)
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+
+
+class MfaVerifySerializer(serializers.Serializer):
+    code = serializers.CharField(required=True, write_only=True)
+
+
+class SocialLoginSerializer(serializers.Serializer):
+    PROVIDERS = ['google', 'linkedin']
+
+    provider = serializers.ChoiceField(choices=PROVIDERS)
+    access_token = serializers.CharField(required=True, write_only=True)
