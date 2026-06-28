@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from apps.core.permissions import IsRecruiterRole, has_role
 from .models import ApplicationStatusHistory, ExternalJobSource, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
 from .pagination import JobPagination
-from .serializers import ExternalJobSourceSerializer, JobApplicationSerializer, JobPostingSerializer, RecruitmentNotificationSerializer, TalentProfileSerializer
+from .serializers import ExternalJobSourceSerializer, JobApplicationSerializer, JobPostingListSerializer, JobPostingSerializer, RecruitmentNotificationSerializer, TalentProfileSerializer
 
 User = get_user_model()
 
@@ -32,6 +32,11 @@ class JobListView(generics.ListCreateAPIView):
     queryset = JobPosting.objects.filter(is_active=True).order_by('-created_at')
     serializer_class = JobPostingSerializer
     pagination_class = JobPagination
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return JobPostingListSerializer
+        return JobPostingSerializer
 
     def get_permissions(self):
         if self.request.method == 'POST':

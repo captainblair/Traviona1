@@ -5,7 +5,7 @@ import Footer from '../components/Footer.jsx';
 import InsightCover from '../components/InsightCover.jsx';
 import InsightsHero from '../components/InsightsHero.jsx';
 import { insightCategories } from '../data/dummyInsights.js';
-import { fetchInsights } from '../lib/insightsApi.js';
+import { fetchInsights, readCachedInsights } from '../lib/insightsApi.js';
 
 function formatPublishedDate(value) {
   if (!value) return '';
@@ -97,18 +97,28 @@ export default function InsightsPage() {
 
   useEffect(() => {
     let cancelled = false;
+    const params = { category: activeCategory, query: searchTerm };
+    const cached = readCachedInsights(params);
+
+    if (cached) {
+      setInsights(cached);
+      setIsLoading(false);
+    } else {
+      setIsLoading(true);
+    }
 
     async function loadInsights() {
-      setIsLoading(true);
       setLoadError('');
       try {
-        const results = await fetchInsights({ category: activeCategory, query: searchTerm });
+        const results = await fetchInsights(params, { force: Boolean(cached) });
         if (!cancelled) {
           setInsights(results);
         }
       } catch {
         if (!cancelled) {
-          setInsights([]);
+          if (!cached) {
+            setInsights([]);
+          }
           setLoadError('Could not load insights. Make sure the backend is running on port 8000.');
         }
       } finally {
@@ -166,7 +176,7 @@ export default function InsightsPage() {
             <p className="mt-8 rounded-lg border border-red-200 bg-red-50 px-4 py-6 text-sm text-red-800">{loadError}</p>
           )}
 
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="mt-8 hidden grid-cols-1 gap-4 sm:grid-cols-2 lg:grid lg:grid-cols-3 xl:grid-cols-4">
             {insights.map((insight) => (
               <InsightCard key={insight.id} insight={insight} />
             ))}

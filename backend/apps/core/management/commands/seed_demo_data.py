@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from apps.insights.models import ExternalInsightSource, Insight, InsightAuthor, InsightCategory, InsightTag
+from apps.insights.models import ExternalInsightSource, InsightCategory
 from apps.recruitment.models import ExternalJobSource, JobPosting, TalentProfile
 from apps.website.models import AboutPage, ContactInformation, GlobalPresence, HomePage, HomePageSection, LeadershipMember, Service
 
@@ -315,25 +315,6 @@ class Command(BaseCommand):
             region='East Africa',
             defaults={'summary': 'Regional advisory and talent network coverage.', 'display_order': 1, 'is_active': True},
         )
-
-        category, _ = InsightCategory.objects.get_or_create(name='Global Trends')
-        tag, _ = InsightTag.objects.get_or_create(name='Strategy')
-        author, _ = InsightAuthor.objects.get_or_create(name='Traviona Desk', defaults={'title': 'Editorial Team'})
-        insight, _ = Insight.objects.update_or_create(
-            title='Global strategy briefing',
-            defaults={
-                'summary': 'A concise look at strategic shifts shaping organizations.',
-                'content': 'Traviona tracks global shifts across politics, markets, security, and society.',
-                'category': 'global_trends',
-                'category_ref': category,
-                'author': author,
-                'author_name': author.name,
-                'tags': 'strategy,global trends',
-                'moderation_status': 'published',
-                'is_published': True,
-            },
-        )
-        insight.tag_refs.add(tag)
 
         insight_categories = {
             'global_trends': InsightCategory.objects.get_or_create(

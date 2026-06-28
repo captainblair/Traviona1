@@ -26,6 +26,7 @@ import AdminApplicationsPage from './pages/admin/AdminApplicationsPage.jsx';
 import AdminTalentsPage from './pages/admin/AdminTalentsPage.jsx';
 import AdminInsightsPage from './pages/admin/AdminInsightsPage.jsx';
 import AssistantWidget from './components/AssistantWidget.jsx';
+import PrefetchLists from './components/PrefetchLists.jsx';
 function AppLayout({ children, showFooter = true }) {
   return (
     <main className="page-shell relative min-h-screen w-full max-w-full overflow-x-hidden bg-white text-ink touch-pan-y">
@@ -41,6 +42,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <ScrollToHash />
+        <PrefetchLists />
         <Routes>
         <Route
           path="/"

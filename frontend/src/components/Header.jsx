@@ -4,12 +4,14 @@ import { Link, useLocation } from 'react-router-dom';
 import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { canAccessAdmin } from '../lib/adminAccess.js';
+import { prefetchInsights } from '../lib/insightsApi.js';
+import { prefetchJobs } from '../lib/jobsApi.js';
 
 const navItems = [
   { label: 'Home', to: '/' },
   { label: 'About', to: '/about' },
-  { label: 'Insights', to: '/insights' },
-  { label: 'Careers', to: '/careers' },
+  { label: 'Insights', to: '/insights', prefetch: prefetchInsights },
+  { label: 'Careers', to: '/careers', prefetch: prefetchJobs },
   { label: 'Talent Network', to: '/talent-network' },
   { label: 'Contact', to: '/contact' },
 ];
@@ -25,6 +27,12 @@ export default function Header() {
       return to;
     }
     return to;
+  };
+
+  const prefetchForRoute = (to, prefetch) => {
+    if (prefetch) {
+      prefetch();
+    }
   };
 
   return (
@@ -45,9 +53,15 @@ export default function Header() {
         </Link>
 
         <div className="hidden min-w-0 items-center gap-8 rounded-full border border-white/10 bg-ink/30 px-6 py-3 text-sm text-white/80 backdrop-blur lg:flex">
-          {navItems.map(({ label, to }) =>
+          {navItems.map(({ label, to, prefetch }) =>
             to.startsWith('/') && !to.includes('#') ? (
-              <Link key={label} to={to} className="transition hover:text-tide">
+              <Link
+                key={label}
+                to={to}
+                className="transition hover:text-tide"
+                onMouseEnter={() => prefetchForRoute(to, prefetch)}
+                onFocus={() => prefetchForRoute(to, prefetch)}
+              >
                 {label}
               </Link>
             ) : (
@@ -121,13 +135,15 @@ export default function Header() {
                 {user.email && <p className="mt-0.5 truncate text-xs text-white/60">{user.email}</p>}
               </div>
             ) : null}
-            {navItems.map(({ label, to }) =>
+            {navItems.map(({ label, to, prefetch }) =>
               to.startsWith('/') && !to.includes('#') ? (
                 <Link
                   key={label}
                   to={to}
                   className="border-b border-white/10 px-1 py-3 text-sm font-semibold text-white/86 transition last:border-b-0 hover:text-tide"
                   onClick={closeMenu}
+                  onMouseEnter={() => prefetchForRoute(to, prefetch)}
+                  onFocus={() => prefetchForRoute(to, prefetch)}
                 >
                   {label}
                 </Link>

@@ -1,3 +1,4 @@
+from django.db.models import F
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -13,14 +14,18 @@ from .serializers import (
     InsightAuthorSerializer,
     InsightCategorySerializer,
     InsightEditorialSerializer,
+    InsightListSerializer,
     InsightSerializer,
     InsightTagSerializer,
 )
 
 
 class InsightListView(generics.ListAPIView):
-    queryset = Insight.objects.filter(is_published=True).order_by('-published_at')
-    serializer_class = InsightSerializer
+    queryset = Insight.objects.filter(is_published=True).order_by(
+        F('published_at').desc(nulls_last=True),
+        '-created_at',
+    )
+    serializer_class = InsightListSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = InsightPagination
 

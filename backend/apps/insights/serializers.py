@@ -31,6 +31,25 @@ class ExternalInsightSourceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'last_synced_at', 'created_at']
 
 
+class InsightListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Insight
+        fields = [
+            'id',
+            'title',
+            'slug',
+            'summary',
+            'featured_image',
+            'featured_image_url',
+            'category',
+            'author_name',
+            'read_time_minutes',
+            'source_name',
+            'source_url',
+            'published_at',
+        ]
+
+
 class InsightSerializer(serializers.ModelSerializer):
     category_detail = InsightCategorySerializer(source='category_ref', read_only=True)
     author_detail = InsightAuthorSerializer(source='author', read_only=True)

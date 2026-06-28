@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CareersHero from '../components/CareersHero.jsx';
 import Footer from '../components/Footer.jsx';
-import { fetchJobs } from '../lib/jobsApi.js';
+import { fetchJobs, readCachedJobs } from '../lib/jobsApi.js';
 function formatEmploymentType(value) {
   return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
@@ -66,24 +66,34 @@ export default function CareersPage() {
 
   useEffect(() => {
     let cancelled = false;
+    const params = {
+      employmentType,
+      location,
+      experience,
+      source,
+      query: searchTerm,
+    };
+    const cached = readCachedJobs(params);
+
+    if (cached) {
+      setJobs(cached);
+      setIsLoading(false);
+    } else {
+      setIsLoading(true);
+    }
 
     async function loadJobs() {
-      setIsLoading(true);
       setLoadError('');
       try {
-        const results = await fetchJobs({
-          employmentType,
-          location,
-          experience,
-          source,
-          query: searchTerm,
-        });
+        const results = await fetchJobs(params, { force: Boolean(cached) });
         if (!cancelled) {
           setJobs(results);
         }
       } catch {
         if (!cancelled) {
-          setJobs([]);
+          if (!cached) {
+            setJobs([]);
+          }
           setLoadError('Could not load jobs. Make sure the backend is running on port 8000.');
         }
       } finally {

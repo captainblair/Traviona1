@@ -1,8 +1,11 @@
-import { dummyInsights } from '../data/dummyInsights.js';
 import { formatInsightParagraphs, stripInsightHtml } from './insightText.js';
 import { resolveApiUrl } from './apiBase.js';
+import { buildCacheKey, prefetchList, readListCache, writeListCache } from './listCache.js';
 
-function buildInsightsUrl({ category, query, page = 1, pageSize = 50 } = {}) {
+const CACHE_PREFIX = 'insights';
+const DEFAULT_LIST_PARAMS = { category: 'all', query: '' };
+
+function buildInsightsUrl({ category, query, page = 1, pageSize = 200 } = {}) {
   const url = resolveApiUrl('/insights/');
 
   if (category && category !== 'all') {
@@ -22,8 +25,8 @@ function buildInsightUrl(slug) {
   return resolveApiUrl(`/insights/${slug}/`).toString();
 }
 
-async function fetchInsightsPage(params, page) {
-  const response = await fetch(buildInsightsUrl({ ...params, page }));
+async function fetchInsightsPage(params, page, pageSize) {
+  const response = await fetch(buildInsightsUrl({ ...params, page, pageSize }));
 
   if (!response.ok) {
     throw new Error(`Insights request failed (${response.status})`);
@@ -35,27 +38,47 @@ async function fetchInsightsPage(params, page) {
   return { results, next };
 }
 
+export function readCachedInsights(params = DEFAULT_LIST_PARAMS) {
+  return readListCache(buildCacheKey(CACHE_PREFIX, params));
+}
+
+export function prefetchInsights(params = DEFAULT_LIST_PARAMS) {
+  prefetchList(buildCacheKey(CACHE_PREFIX, params), () => fetchInsights(params));
+}
+
 /**
  * Fetches published insights from the Django API (`GET /api/insights/`).
  */
-export async function fetchInsights({ category = 'all', query = '' } = {}) {
+export async function fetchInsights({ category = 'all', query = '' } = {}, { force = false } = {}) {
   const params = { category, query };
+  const cacheKey = buildCacheKey(CACHE_PREFIX, params);
+  if (!force) {
+    const cached = readListCache(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
   const collected = [];
   let page = 1;
   let hasNext = true;
+  const pageSize = 200;
 
-  while (hasNext && page <= 10) {
-    const { results, next } = await fetchInsightsPage(params, page);
+  while (hasNext && page <= 3) {
+    const { results, next } = await fetchInsightsPage(params, page, pageSize);
     collected.push(...results);
     hasNext = Boolean(next) && results.length > 0;
     page += 1;
   }
 
   if (collected.length === 0) {
+    writeListCache(cacheKey, []);
     return [];
   }
 
-  return collected.map(normalizeInsight);
+  const normalized = collected.map(normalizeInsight);
+  writeListCache(cacheKey, normalized);
+  return normalized;
 }
 
 export async function fetchInsightBySlug(slug) {
@@ -90,19 +113,4 @@ function normalizeInsight(insight) {
     source_url: insight.source_url || '',
     is_external: Boolean(insight.source_url),
   };
-}
-
-export function filterLocalInsights({ category, query }) {
-  const normalizedQuery = query.trim().toLowerCase();
-
-  return dummyInsights.filter((insight) => {
-    const matchesCategory = category === 'all' || insight.category === category;
-    const matchesQuery =
-      !normalizedQuery ||
-      insight.title.toLowerCase().includes(normalizedQuery) ||
-      insight.summary.toLowerCase().includes(normalizedQuery) ||
-      insight.author_name.toLowerCase().includes(normalizedQuery);
-
-    return matchesCategory && matchesQuery;
-  });
 }

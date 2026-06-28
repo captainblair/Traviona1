@@ -2,6 +2,25 @@ from rest_framework import serializers
 from .models import ApplicationStatusHistory, ExternalJobSource, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
 
 
+class JobPostingListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobPosting
+        fields = [
+            'id',
+            'title',
+            'slug',
+            'summary',
+            'location',
+            'employment_type',
+            'salary_range',
+            'experience_level',
+            'source_name',
+            'source_url',
+            'is_active',
+            'created_at',
+        ]
+
+
 class JobPostingSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobPosting

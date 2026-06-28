@@ -1,7 +1,17 @@
 import { dummyJobs } from '../data/dummyJobs.js';
 import { API_BASE, resolveApiUrl } from './apiBase.js';
+import { buildCacheKey, prefetchList, readListCache, writeListCache } from './listCache.js';
 
-function buildJobsUrl({ employmentType, location, experience, source, query, page = 1, pageSize = 200 } = {}) {
+const CACHE_PREFIX = 'jobs';
+const DEFAULT_LIST_PARAMS = {
+  employmentType: 'all',
+  location: 'all',
+  experience: 'all',
+  source: 'all',
+  query: '',
+};
+
+function buildJobsUrl({ employmentType, location, experience, source, query, page = 1, pageSize = 500 } = {}) {
   const url = resolveApiUrl('/recruitment/jobs/');
 
   if (query?.trim()) {
@@ -30,8 +40,8 @@ function buildJobUrl(slug) {
   return `${API_BASE.replace(/\/$/, '')}/recruitment/jobs/${slug}/`;
 }
 
-async function fetchJobsPage(params, page) {
-  const response = await fetch(buildJobsUrl({ ...params, page }));
+async function fetchJobsPage(params, page, pageSize) {
+  const response = await fetch(buildJobsUrl({ ...params, page, pageSize }));
 
   if (!response.ok) {
     throw new Error(`Jobs request failed (${response.status})`);
@@ -43,39 +53,56 @@ async function fetchJobsPage(params, page) {
   return { results, next };
 }
 
+export function readCachedJobs(params = DEFAULT_LIST_PARAMS) {
+  return readListCache(buildCacheKey(CACHE_PREFIX, params));
+}
+
+export function prefetchJobs(params = DEFAULT_LIST_PARAMS) {
+  prefetchList(buildCacheKey(CACHE_PREFIX, params), () => fetchJobs(params));
+}
+
 /**
  * Fetches active job postings from Django (`GET /api/recruitment/jobs/`).
- * Falls back to dummy data only when the API is unavailable.
  */
-export async function fetchJobs({
-  employmentType = 'all',
-  location = 'all',
-  experience = 'all',
-  source = 'all',
-  query = '',
-} = {}) {
+export async function fetchJobs(
+  {
+    employmentType = 'all',
+    location = 'all',
+    experience = 'all',
+    source = 'all',
+    query = '',
+  } = {},
+  { force = false } = {},
+) {
   const params = { employmentType, location, experience, source, query };
-
-  try {
-    const collected = [];
-    let page = 1;
-    let hasNext = true;
-
-    while (hasNext && page <= 5) {
-      const { results, next } = await fetchJobsPage(params, page);
-      collected.push(...results);
-      hasNext = Boolean(next) && results.length > 0;
-      page += 1;
+  const cacheKey = buildCacheKey(CACHE_PREFIX, params);
+  if (!force) {
+    const cached = readListCache(cacheKey);
+    if (cached) {
+      return cached;
     }
-
-    if (collected.length === 0) {
-      return [];
-    }
-
-    return collected.map(normalizeJob);
-  } catch (error) {
-    throw error;
   }
+
+  const collected = [];
+  let page = 1;
+  let hasNext = true;
+  const pageSize = 500;
+
+  while (hasNext && page <= 3) {
+    const { results, next } = await fetchJobsPage(params, page, pageSize);
+    collected.push(...results);
+    hasNext = Boolean(next) && results.length > 0;
+    page += 1;
+  }
+
+  if (collected.length === 0) {
+    writeListCache(cacheKey, []);
+    return [];
+  }
+
+  const normalized = collected.map(normalizeJob);
+  writeListCache(cacheKey, normalized);
+  return normalized;
 }
 
 export async function fetchJobBySlug(slug) {
