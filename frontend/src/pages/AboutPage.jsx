@@ -188,20 +188,19 @@ export default function AboutPage() {
 
           <div className="min-w-0">
             <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">Mission & Values</h2>
-            <div className="mt-6 grid grid-cols-3 gap-3 sm:gap-4">
-              {missionValues.map(({ label, icon: Icon }, index) => (
-                <RevealItem
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+              {missionValues.map(({ label, icon: Icon }) => (
+                <div
                   key={label}
-                  delay={index * 80}
-                  className="flex min-w-0 flex-col items-center rounded-md border border-ink/10 bg-white px-2 py-4 text-center shadow-[0_8px_24px_rgba(7,19,31,0.05)] sm:px-3 sm:py-5"
+                  className="flex min-w-0 flex-col items-center rounded-lg border border-ink/10 bg-mist/30 px-3 py-4 text-center sm:px-4 sm:py-5"
                 >
-                  <span className="grid h-10 w-10 place-items-center rounded-full bg-tide/12 text-harbor sm:h-11 sm:w-11">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-tide/12 text-harbor sm:h-11 sm:w-11">
+                    <Icon className="h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
                   </span>
-                  <p className="mt-3 break-words text-[0.65rem] font-semibold leading-4 text-ink/75 sm:text-xs sm:leading-5">
+                  <p className="mt-3 text-xs font-semibold leading-snug text-ink/80 sm:text-sm">
                     {label}
                   </p>
-                </RevealItem>
+                </div>
               ))}
             </div>
           </div>
