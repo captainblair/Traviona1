@@ -9,7 +9,10 @@ import InsightsPage from './pages/InsightsPage.jsx';
 import TalentNetworkPage from './pages/TalentNetworkPage.jsx';
 import CareersPage from './pages/CareersPage.jsx';
 import JobDetailPage from './pages/JobDetailPage.jsx';
-import LegalPage from './pages/LegalPage.jsx';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
+import TermsOfServicePage from './pages/TermsOfServicePage.jsx';
+import CookiePolicyPage from './pages/CookiePolicyPage.jsx';
+import ServicePage from './pages/ServicePage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import ContactPage from './pages/ContactPage.jsx';
 
@@ -36,6 +39,10 @@ export default function App() {
               <HomePage />
             </AppLayout>
           }
+        />
+        <Route
+          path="/services/:slug"
+          element={<ServicePage />}
         />
         <Route
           path="/about"
@@ -77,30 +84,9 @@ export default function App() {
             </AppLayout>
           }
         />
-        <Route
-          path="/privacy-policy"
-          element={
-            <AppLayout showFooter={false}>
-              <LegalPage page="privacy-policy" />
-            </AppLayout>
-          }
-        />
-        <Route
-          path="/terms-of-service"
-          element={
-            <AppLayout showFooter={false}>
-              <LegalPage page="terms-of-service" />
-            </AppLayout>
-          }
-        />
-        <Route
-          path="/cookie-policy"
-          element={
-            <AppLayout showFooter={false}>
-              <LegalPage page="cookie-policy" />
-            </AppLayout>
-          }
-        />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+        <Route path="/cookie-policy" element={<CookiePolicyPage />} />
         <Route path="/login" element={<AuthPage initialMode="login" />} />
         <Route path="/register" element={<AuthPage initialMode="register" />} />
         <Route

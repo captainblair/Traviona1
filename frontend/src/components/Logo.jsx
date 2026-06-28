@@ -13,6 +13,11 @@ const variants = {
     src: '/images/logo-light.png',
     className: 'h-16 w-auto max-w-[7rem] brightness-0 sm:h-20 sm:max-w-[8.5rem]',
   },
+  /** Deep navy wordmark for light backgrounds */
+  navy: {
+    src: '/images/logo-dark.png',
+    className: 'h-16 w-auto max-w-[8rem] sm:h-[4.5rem] sm:max-w-[9.5rem]',
+  },
   mark: {
     src: '/images/logo-light.png',
     className: 'h-11 w-auto max-w-[3rem] object-cover object-top',

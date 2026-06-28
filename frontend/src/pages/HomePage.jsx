@@ -2,34 +2,7 @@ import { ArrowRight, BriefcaseBusiness } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero.jsx';
 import { RevealItem, RevealSection } from '../components/reveal.jsx';
-
-const services = [
-  {
-    title: 'Global Strategy',
-    text: 'Market entry, geopolitical positioning, and growth counsel.',
-    image: '/images/service-global-strategy.jpg',
-  },
-  {
-    title: 'Public Affairs',
-    text: 'Policy intelligence and stakeholder strategy for complex systems.',
-    image: '/images/service-public-affairs.avif',
-  },
-  {
-    title: 'Risk Advisory',
-    text: 'Risk visibility, operating plans, and executive support.',
-    image: '/images/service-risk-advisory.avif',
-  },
-  {
-    title: 'Geopolitical Shifts and Their Future',
-    text: 'Forward-looking analysis of regional and global power shifts.',
-    image: '/images/service-geopolitical.avif',
-  },
-  {
-    title: 'Talent Network',
-    text: 'Specialized consultants matched to strategic assignments.',
-    image: '/images/service-talent-network.jpg',
-  },
-];
+import { services } from '../data/services.js';
 
 export default function HomePage() {
   return (
@@ -49,9 +22,9 @@ export default function HomePage() {
           </div>
 
           <div className="mt-8 grid w-full min-w-0 grid-cols-1 gap-5 md:grid-cols-3 xl:grid-cols-5">
-            {services.map(({ title, text, image }, index) => (
+            {services.map(({ slug, title, cardText, image }, index) => (
               <RevealItem
-                key={title}
+                key={slug}
                 as="article"
                 delay={index * 120}
                 className="w-full min-w-0 max-w-full rounded-md border border-ink/5 bg-white p-5 shadow-[0_14px_38px_rgba(7,19,31,0.08)] transition duration-300 hover:shadow-[0_18px_48px_rgba(7,19,31,0.13)] motion-safe:hover:-translate-y-1"
@@ -63,11 +36,11 @@ export default function HomePage() {
                   aria-hidden="true"
                 />
                 <h3 className="mt-5 break-words font-display text-lg font-bold leading-6 text-ink sm:min-h-[3rem]">{title}</h3>
-                <p className="mt-3 text-xs leading-5 text-ink/62 sm:min-h-[4.5rem]">{text}</p>
-                <a href="#services" className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-harbor">
+                <p className="mt-3 text-xs leading-5 text-ink/62 sm:min-h-[4.5rem]">{cardText}</p>
+                <Link to={`/services/${slug}`} className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-harbor">
                   Learn More
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-                </a>
+                </Link>
               </RevealItem>
             ))}
           </div>

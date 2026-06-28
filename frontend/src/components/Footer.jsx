@@ -12,11 +12,11 @@ const quickLinks = [
 ];
 
 const services = [
-  { label: 'Global Strategy', to: '/#services' },
-  { label: 'Public Affairs & Political Risk', to: '/#services' },
-  { label: 'Risk Advisory', to: '/#services' },
-  { label: 'Talent Acquisition', to: '/talent-network' },
-  { label: 'Geopolitical Intelligence', to: '/insights' },
+  { label: 'Global Strategy', to: '/services/global-strategy' },
+  { label: 'Public Affairs', to: '/services/public-affairs' },
+  { label: 'Risk Advisory', to: '/services/risk-advisory' },
+  { label: 'Geopolitical Shifts', to: '/services/geopolitical-shifts' },
+  { label: 'Talent Network', to: '/services/talent-network' },
 ];
 
 const legalLinks = [

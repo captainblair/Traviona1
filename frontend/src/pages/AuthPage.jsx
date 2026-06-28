@@ -1,27 +1,11 @@
-import { ArrowLeft, BriefcaseBusiness, ChevronDown, Network, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, BriefcaseBusiness, Eye, EyeOff, Network, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import BrandLockup from '../components/BrandLockup.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { requestPasswordReset } from '../lib/authApi.js';
-
-const roleOptions = [
-  { value: 'Policy & Geopolitics', label: 'Policy & Geopolitics' },
-  { value: 'Market Intelligence', label: 'Market Intelligence' },
-  { value: 'Risk & Security', label: 'Risk & Security' },
-  { value: 'Public Affairs', label: 'Public Affairs' },
-  { value: 'Strategy Consulting', label: 'Strategy Consulting' },
-  { value: 'Research & Analysis', label: 'Research & Analysis' },
-];
-
-const regionOptions = [
-  { value: 'Africa', label: 'Africa' },
-  { value: 'Americas', label: 'Americas' },
-  { value: 'Asia-Pacific', label: 'Asia-Pacific' },
-  { value: 'Europe', label: 'Europe' },
-  { value: 'Middle East', label: 'Middle East' },
-  { value: 'Global / Remote', label: 'Global / Remote' },
-];
+const PASSWORD_HINT =
+  'Use at least 8 characters with uppercase, lowercase, and a number.';
 
 const highlights = [
   { icon: BriefcaseBusiness, label: 'Career applications' },
@@ -29,111 +13,35 @@ const highlights = [
   { icon: ShieldCheck, label: 'Secure member tools' },
 ];
 
-function Field({ id, label, type = 'text', value, onChange, required = true, autoComplete }) {
-  return (
-    <div>
-      <label htmlFor={id} className="mb-2 block text-xs font-bold uppercase tracking-[0.1em] text-ink/50">
-        {label}
-      </label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={onChange}
-        required={required}
-        autoComplete={autoComplete}
-        placeholder={label}
-        className="w-full rounded-xl border border-ink/10 bg-ivory/50 px-4 py-3.5 text-sm text-ink outline-none ring-tide/30 placeholder:text-ink/40 focus:border-tide/40 focus:bg-white focus:ring-2"
-      />
-    </div>
-  );
-}
-
-function SelectField({ id, label, value, onChange, options }) {
-  return (
-    <div className="relative">
-      <label htmlFor={id} className="mb-2 block text-xs font-bold uppercase tracking-[0.1em] text-ink/50">
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value}
-        onChange={onChange}
-        required
-        className="w-full appearance-none rounded-xl border border-ink/10 bg-ivory/50 px-4 py-3.5 pr-10 text-sm text-ink outline-none ring-tide/30 focus:border-tide/40 focus:bg-white focus:ring-2"
-      >
-        <option value="" disabled>
-          Select {label.toLowerCase()}
-        </option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-4 top-[2.65rem] h-4 w-4 text-ink/45" aria-hidden="true" />
-    </div>
-  );
-}
-
-function SocialButton({ label, disabled = true }) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      title="Social sign-in coming soon"
-      className="inline-flex flex-1 items-center justify-center rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm font-semibold text-ink/55 shadow-sm disabled:cursor-not-allowed"
-    >
-      {label}
-    </button>
-  );
-}
-
 function AuthVisualPanel({ compact = false }) {
   return (
-    <div
-      className={`relative overflow-hidden bg-ink text-white ${
-        compact ? 'min-h-[17rem]' : 'min-h-full lg:min-h-screen'
-      }`}
-    >
+    <div className={`auth-visual-panel ${compact ? 'auth-visual-panel-compact' : ''}`}>
       <img
         src="/images/register1.avif"
         alt=""
         aria-hidden="true"
-        className={`absolute inset-0 h-full w-full object-cover ${compact ? 'object-[center_30%]' : 'object-center'}`}
+        className="auth-visual-image"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/88 to-ink/55 lg:bg-gradient-to-r lg:from-ink/95 lg:via-ink/82 lg:to-ink/45" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_85%,rgba(43,196,182,0.28),transparent_46%)]" />
-      <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_center,rgba(255,255,255,0.45)_1px,transparent_1px)] [background-size:22px_22px]" />
+      <div className="auth-visual-overlay" />
 
-      <div
-        className={`relative z-10 flex h-full flex-col ${
-          compact ? 'justify-end px-5 pb-8 pt-16' : 'justify-between px-8 py-10 xl:px-12 xl:py-12'
-        }`}
-      >
+      <div className="auth-visual-content">
         {!compact && (
-          <Link
-            to="/"
-            className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-sm font-semibold text-white/85 backdrop-blur transition hover:border-tide hover:text-tide"
-          >
+          <Link to="/" className="auth-visual-back">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back to site
           </Link>
         )}
 
-        <div className={compact ? 'text-center' : 'max-w-md'}>
+        <div className={compact ? 'auth-visual-brand-center' : 'auth-visual-brand'}>
           <BrandLockup size={compact ? 'md' : 'lg'} theme="dark" align={compact ? 'center' : 'left'} />
           {!compact && (
             <>
-              <p className="mt-6 text-base leading-7 text-white/78">
+              <p className="auth-visual-copy">
                 Join Traviona&apos;s member platform for careers, expert network access, and advisory opportunities.
               </p>
-              <div className="mt-8 flex flex-wrap gap-2">
+              <div className="auth-visual-tags">
                 {highlights.map(({ icon: Icon, label }) => (
-                  <span
-                    key={label}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/10 px-3 py-2 text-xs font-semibold text-white/85 backdrop-blur-sm"
-                  >
+                  <span key={label} className="auth-visual-tag">
                     <Icon className="h-3.5 w-3.5 text-tide" aria-hidden="true" />
                     {label}
                   </span>
@@ -144,10 +52,140 @@ function AuthVisualPanel({ compact = false }) {
         </div>
 
         {!compact && (
-          <p className="hidden text-xs text-white/45 lg:block">Professional consulting &amp; global insights</p>
+          <p className="auth-visual-footnote">Professional consulting &amp; global insights</p>
         )}
       </div>
     </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      />
+    </svg>
+  );
+}
+
+function LinkedInIcon() {
+  return (
+    <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#0A66C2"
+        d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+      />
+    </svg>
+  );
+}
+
+function SocialButton({ provider, icon: Icon }) {
+  return (
+    <button
+      type="button"
+      disabled
+      title={`${provider} sign-in coming soon`}
+      className="auth-social-btn"
+    >
+      <Icon />
+      <span>{provider}</span>
+    </button>
+  );
+}
+
+function AuthDivider({ label }) {
+  return (
+    <div className="auth-divider">
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function AuthField({ id, label, type = 'text', value, onChange, required = true, autoComplete, placeholder }) {
+  return (
+    <div className="auth-field">
+      <label htmlFor={id}>{label}</label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={onChange}
+        required={required}
+        autoComplete={autoComplete}
+        placeholder={placeholder || label}
+        className="auth-input"
+      />
+    </div>
+  );
+}
+
+function PasswordField({ id, label, value, onChange, autoComplete, hint }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="auth-field">
+      <label htmlFor={id}>{label}</label>
+      <div className="auth-password-wrap">
+        <input
+          id={id}
+          type={visible ? 'text' : 'password'}
+          value={value}
+          onChange={onChange}
+          required
+          autoComplete={autoComplete}
+          placeholder={label}
+          className="auth-input auth-input-password"
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((prev) => !prev)}
+          className="auth-password-toggle"
+          aria-label={visible ? 'Hide password' : 'Show password'}
+        >
+          {visible ? <EyeOff className="h-[1.125rem] w-[1.125rem]" /> : <Eye className="h-[1.125rem] w-[1.125rem]" />}
+        </button>
+      </div>
+      {hint && <p className="auth-field-hint">{hint}</p>}
+    </div>
+  );
+}
+
+function RecaptchaPlaceholder() {
+  return (
+    <div className="auth-recaptcha" aria-hidden="true">
+      <div className="auth-recaptcha-box">
+        <span className="auth-recaptcha-check" />
+        <span className="auth-recaptcha-label">I&apos;m not a robot</span>
+      </div>
+      <div className="auth-recaptcha-badge">
+        <span className="auth-recaptcha-icon">re</span>
+        <span className="auth-recaptcha-meta">reCAPTCHA</span>
+        <span className="auth-recaptcha-meta">Privacy · Terms</span>
+      </div>
+    </div>
+  );
+}
+
+function meetsPasswordRules(password) {
+  return (
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password)
   );
 }
 
@@ -157,7 +195,6 @@ export default function AuthPage({ initialMode = 'login' }) {
   const { login, register, isAuthenticated } = useAuth();
   const nextPath = searchParams.get('next') || '/';
 
-  const [mode, setMode] = useState(initialMode);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -165,13 +202,19 @@ export default function AuthPage({ initialMode = 'login' }) {
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [registerForm, setRegisterForm] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
-    role: '',
-    region: '',
+    acceptTerms: false,
+    acceptCommunications: false,
   });
   const [resetEmail, setResetEmail] = useState('');
+
+  useEffect(() => {
+    setShowReset(false);
+    setError('');
+  }, [initialMode]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -199,21 +242,27 @@ export default function AuthPage({ initialMode = 'login' }) {
   async function handleRegister(event) {
     event.preventDefault();
     setError('');
-    setIsSubmitting(true);
 
+    if (!registerForm.acceptTerms) {
+      setError('Please accept the Terms of Service and Privacy Policy.');
+      return;
+    }
+
+    if (!meetsPasswordRules(registerForm.password)) {
+      setError(PASSWORD_HINT);
+      return;
+    }
+
+    setIsSubmitting(true);
     const email = registerForm.email.trim().toLowerCase();
-    const [firstName, ...rest] = registerForm.fullName.trim().split(/\s+/);
-    const lastName = rest.join(' ');
 
     try {
       await register({
         username: email,
         email,
         password: registerForm.password,
-        first_name: firstName || '',
-        last_name: lastName,
-        location: registerForm.region,
-        headline: registerForm.role,
+        first_name: registerForm.firstName.trim(),
+        last_name: registerForm.lastName.trim(),
       });
       navigate(nextPath, { replace: true });
     } catch (err) {
@@ -239,212 +288,202 @@ export default function AuthPage({ initialMode = 'login' }) {
     }
   }
 
-  const heading =
-    mode === 'register' ? 'Create your account' : showReset ? 'Reset your password' : 'Welcome back';
+  const isRegister = initialMode === 'register';
 
   const formContent = (
-    <div className="overflow-hidden rounded-2xl border border-ink/8 bg-white shadow-[0_20px_50px_rgba(7,19,31,0.08)]">
-      <div className="h-1.5 bg-gradient-to-r from-tide via-harbor to-midnight" aria-hidden="true" />
+    <div className="auth-card">
+      {showReset ? (
+        <>
+          <h1 className="auth-title">Reset your password</h1>
+          <p className="auth-subtitle">Enter your email and we&apos;ll send you a reset link.</p>
 
-      <div className="p-6 sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-harbor">Member access</p>
-        <h1 className="mt-2 font-display text-3xl font-bold leading-tight text-ink sm:text-[2rem]">{heading}</h1>
-        <p className="mt-2 text-sm leading-6 text-ink/60">
-          {mode === 'register'
-            ? 'Set up your Traviona profile to apply, collaborate, and stay connected.'
-            : 'Sign in to manage applications and member tools.'}
-        </p>
+          {error && <p className="auth-alert auth-alert-error">{error}</p>}
+          {message && <p className="auth-alert auth-alert-success">{message}</p>}
 
-        {!showReset && (
-          <div className="mt-7 grid grid-cols-2 gap-2 rounded-xl bg-ivory p-1.5 ring-1 ring-ink/8">
-            <button
-              type="button"
-              onClick={() => {
-                setMode('login');
-                setError('');
-              }}
-              className={`rounded-lg px-4 py-2.5 text-sm font-bold transition ${
-                mode === 'login' ? 'bg-ink text-white shadow-sm' : 'text-ink/60 hover:text-ink'
-              }`}
-            >
-              Login
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode('register');
-                setError('');
-              }}
-              className={`rounded-lg px-4 py-2.5 text-sm font-bold transition ${
-                mode === 'register' ? 'bg-ink text-white shadow-sm' : 'text-ink/60 hover:text-ink'
-              }`}
-            >
-              Register
-            </button>
-          </div>
-        )}
-
-        {error && (
-          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
-        )}
-        {message && (
-          <p className="mt-4 rounded-xl border border-tide/20 bg-tide/10 px-4 py-3 text-sm text-harbor">{message}</p>
-        )}
-
-        {showReset ? (
-          <form className="mt-7 space-y-4" onSubmit={handleReset}>
-            <Field
+          <form className="auth-form" onSubmit={handleReset}>
+            <AuthField
               id="reset-email"
-              label="Email Address"
+              label="Email"
               type="email"
               value={resetEmail}
               onChange={(event) => setResetEmail(event.target.value)}
               autoComplete="email"
             />
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex w-full items-center justify-center rounded-full bg-tide px-6 py-3.5 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white disabled:opacity-60"
-            >
+            <button type="submit" disabled={isSubmitting} className="auth-primary-btn">
               {isSubmitting ? 'Sending…' : 'Send reset link'}
             </button>
-            <button
-              type="button"
-              onClick={() => setShowReset(false)}
-              className="text-sm font-semibold text-harbor hover:text-ink"
-            >
+            <button type="button" onClick={() => setShowReset(false)} className="auth-text-link auth-text-link-center">
               Back to sign in
             </button>
           </form>
-        ) : mode === 'login' ? (
-          <form className="mt-7 space-y-4" onSubmit={handleLogin}>
-            <Field
-              id="login-email"
-              label="Email Address"
-              type="email"
-              value={loginForm.email}
-              onChange={(event) => setLoginForm((prev) => ({ ...prev, email: event.target.value }))}
-              autoComplete="email"
-            />
-            <Field
-              id="login-password"
-              label="Password"
-              type="password"
-              value={loginForm.password}
-              onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
-              autoComplete="current-password"
-            />
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowReset(true)}
-                className="text-sm font-semibold text-harbor hover:text-ink"
-              >
-                Forgot password?
-              </button>
+        </>
+      ) : isRegister ? (
+        <>
+          <h1 className="auth-title">Sign up for Traviona Consulting</h1>
+
+          <div className="auth-social-grid">
+            <SocialButton provider="Google" icon={GoogleIcon} />
+            <SocialButton provider="LinkedIn" icon={LinkedInIcon} />
+          </div>
+
+          <AuthDivider label="Manual sign up" />
+
+          {error && <p className="auth-alert auth-alert-error">{error}</p>}
+
+          <form className="auth-form" onSubmit={handleRegister}>
+            <div className="auth-field-row">
+              <AuthField
+                id="register-first-name"
+                label="First Name"
+                value={registerForm.firstName}
+                onChange={(event) => setRegisterForm((prev) => ({ ...prev, firstName: event.target.value }))}
+                autoComplete="given-name"
+              />
+              <AuthField
+                id="register-last-name"
+                label="Last Name"
+                value={registerForm.lastName}
+                onChange={(event) => setRegisterForm((prev) => ({ ...prev, lastName: event.target.value }))}
+                autoComplete="family-name"
+              />
             </div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex w-full items-center justify-center rounded-full bg-tide px-6 py-3.5 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white disabled:opacity-60"
-            >
-              {isSubmitting ? 'Signing in…' : 'Sign In'}
-            </button>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <SocialButton label="Google" />
-              <SocialButton label="LinkedIn" />
-            </div>
-            <p className="text-center text-sm text-ink/60">
-              Don&apos;t have an account?{' '}
-              <button type="button" onClick={() => setMode('register')} className="font-semibold text-harbor hover:text-ink">
-                Register
-              </button>
-            </p>
-          </form>
-        ) : (
-          <form className="mt-7 space-y-4" onSubmit={handleRegister}>
-            <Field
-              id="register-name"
-              label="Full Name"
-              value={registerForm.fullName}
-              onChange={(event) => setRegisterForm((prev) => ({ ...prev, fullName: event.target.value }))}
-              autoComplete="name"
-            />
-            <Field
+
+            <AuthField
               id="register-email"
-              label="Work Email"
+              label="Email"
               type="email"
               value={registerForm.email}
               onChange={(event) => setRegisterForm((prev) => ({ ...prev, email: event.target.value }))}
               autoComplete="email"
             />
-            <Field
+
+            <PasswordField
               id="register-password"
-              label="Create Password"
-              type="password"
+              label="Password"
               value={registerForm.password}
               onChange={(event) => setRegisterForm((prev) => ({ ...prev, password: event.target.value }))}
               autoComplete="new-password"
+              hint={PASSWORD_HINT}
             />
-            <SelectField
-              id="register-role"
-              label="Role / Expertise"
-              value={registerForm.role}
-              onChange={(event) => setRegisterForm((prev) => ({ ...prev, role: event.target.value }))}
-              options={roleOptions}
-            />
-            <SelectField
-              id="register-region"
-              label="Region"
-              value={registerForm.region}
-              onChange={(event) => setRegisterForm((prev) => ({ ...prev, region: event.target.value }))}
-              options={regionOptions}
-            />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <SocialButton label="Google" />
-              <SocialButton label="LinkedIn" />
-            </div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex w-full items-center justify-center rounded-full bg-tide px-6 py-3.5 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white disabled:opacity-60"
-            >
-              {isSubmitting ? 'Creating account…' : 'Create Account'}
+
+            <label className="auth-checkbox">
+              <input
+                type="checkbox"
+                checked={registerForm.acceptTerms}
+                onChange={(event) => setRegisterForm((prev) => ({ ...prev, acceptTerms: event.target.checked }))}
+              />
+              <span>
+                I agree to the{' '}
+                <Link to="/terms-of-service" className="auth-inline-link">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link to="/privacy-policy" className="auth-inline-link">
+                  Privacy Policy
+                </Link>
+              </span>
+            </label>
+
+            <label className="auth-checkbox">
+              <input
+                type="checkbox"
+                checked={registerForm.acceptCommunications}
+                onChange={(event) =>
+                  setRegisterForm((prev) => ({ ...prev, acceptCommunications: event.target.checked }))
+                }
+              />
+              <span>I agree to receive communications from Traviona Consulting</span>
+            </label>
+
+            <RecaptchaPlaceholder />
+
+            <button type="submit" disabled={isSubmitting} className="auth-primary-btn">
+              {isSubmitting ? 'Creating account…' : 'Sign up'}
             </button>
-            <p className="text-center text-sm text-ink/60">
+
+            <p className="auth-switch">
               Already have an account?{' '}
-              <button type="button" onClick={() => setMode('login')} className="font-semibold text-harbor hover:text-ink">
-                Sign In
-              </button>
+              <Link to={`/login${nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''}`} className="auth-inline-link">
+                Sign in
+              </Link>
             </p>
           </form>
-        )}
-      </div>
+        </>
+      ) : (
+        <>
+          <h1 className="auth-title">Welcome back!</h1>
+          <p className="auth-subtitle">Please enter your details.</p>
+
+          <div className="auth-social-grid">
+            <SocialButton provider="Google" icon={GoogleIcon} />
+            <SocialButton provider="LinkedIn" icon={LinkedInIcon} />
+          </div>
+
+          <AuthDivider label="Manual sign in" />
+
+          {error && <p className="auth-alert auth-alert-error">{error}</p>}
+          {message && <p className="auth-alert auth-alert-success">{message}</p>}
+
+          <form className="auth-form" onSubmit={handleLogin}>
+            <AuthField
+              id="login-email"
+              label="Email"
+              type="email"
+              value={loginForm.email}
+              onChange={(event) => setLoginForm((prev) => ({ ...prev, email: event.target.value }))}
+              autoComplete="email"
+            />
+
+            <PasswordField
+              id="login-password"
+              label="Password"
+              value={loginForm.password}
+              onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
+              autoComplete="current-password"
+            />
+
+            <div className="auth-forgot-row">
+              <button type="button" onClick={() => setShowReset(true)} className="auth-text-link">
+                Forgot password?
+              </button>
+            </div>
+
+            <button type="submit" disabled={isSubmitting} className="auth-primary-btn">
+              {isSubmitting ? 'Signing in…' : 'Sign in'}
+            </button>
+
+            <p className="auth-switch">
+              Don&apos;t have an account?{' '}
+              <Link
+                to={`/register${nextPath !== '/' ? `?next=${encodeURIComponent(nextPath)}` : ''}`}
+                className="auth-inline-link"
+              >
+                Sign up
+              </Link>
+            </p>
+          </form>
+        </>
+      )}
     </div>
   );
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[linear-gradient(160deg,#eef6f5_0%,#f8f6f1_45%,#ffffff_100%)] text-ink lg:bg-[linear-gradient(135deg,#eef6f5_0%,#ffffff_55%)]">
-      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+    <div className="auth-page">
+      <div className="auth-layout">
         <div className="lg:hidden">
           <AuthVisualPanel compact />
         </div>
 
-        <aside className="relative hidden lg:sticky lg:top-0 lg:block lg:h-screen" aria-hidden="true">
+        <aside className="auth-aside hidden lg:block" aria-hidden="true">
           <AuthVisualPanel />
         </aside>
 
-        <section className="flex items-center px-4 py-8 sm:px-8 lg:-mt-0 lg:px-10 lg:py-12 xl:px-14">
-          <div className="mx-auto w-full max-w-lg">
-            <Link
-              to="/"
-              className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-harbor transition hover:text-ink lg:hidden"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              Back to site
-            </Link>
-            {formContent}
-          </div>
+        <section className="auth-panel">
+          <Link to="/" className="auth-mobile-back lg:hidden">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Back to site
+          </Link>
+          {formContent}
         </section>
       </div>
     </div>
