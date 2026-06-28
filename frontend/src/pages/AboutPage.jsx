@@ -128,6 +128,32 @@ function GlobalMapPins({ showLabels = true }) {
   );
 }
 
+function MissionValuesList() {
+  return (
+    <>
+      <ul className="about-values-mobile mt-6 lg:hidden">
+        {missionValues.map(({ label }) => (
+          <li key={label} className="about-values-mobile-item">
+            <span className="about-values-mobile-dot" aria-hidden="true" />
+            <span className="about-values-mobile-label">{label}</span>
+          </li>
+        ))}
+      </ul>
+
+      <ul className="about-values-desktop mt-6 hidden lg:grid lg:grid-cols-2 lg:gap-4">
+        {missionValues.map(({ label, icon: Icon }) => (
+          <li key={label} className="about-values-desktop-item">
+            <span className="about-values-desktop-icon" aria-hidden="true">
+              <Icon className="h-5 w-5" strokeWidth={1.75} />
+            </span>
+            <span className="about-values-desktop-label">{label}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 function LeadershipCards({ compact = false, className = '' }) {
   return (
     <div className={`grid grid-cols-2 gap-4 sm:gap-5 ${compact ? '' : 'lg:grid-cols-4'} ${className}`}>
@@ -187,21 +213,9 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="min-w-0 border-t border-ink/8 pt-10 lg:border-t-0 lg:pt-0">
+          <div className="about-values-panel min-w-0 pt-10 lg:pt-0">
             <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">Mission &amp; Values</h2>
-            <ul className="about-values-grid mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-              {missionValues.map(({ label, icon: Icon }) => (
-                <li
-                  key={label}
-                  className="flex min-w-0 items-start gap-3 rounded-lg border border-ink/10 bg-ivory px-4 py-4 sm:items-center sm:px-5"
-                >
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-tide/15 text-harbor">
-                    <Icon className="h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-                  </span>
-                  <span className="pt-2 text-sm font-semibold leading-snug text-ink sm:pt-0">{label}</span>
-                </li>
-              ))}
-            </ul>
+            <MissionValuesList />
           </div>
         </div>
       </section>
