@@ -1,9 +1,10 @@
-import { ArrowRight, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { ArrowRight, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import CareersHero from '../components/CareersHero.jsx';
 import Footer from '../components/Footer.jsx';
 import { fetchJobs, readCachedJobs } from '../lib/jobsApi.js';
+
 function formatEmploymentType(value) {
   return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
@@ -54,7 +55,7 @@ function JobCard({ job, compact = false }) {
 }
 
 export default function CareersPage() {
-  const [query, setQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [employmentType, setEmploymentType] = useState('all');
   const [location, setLocation] = useState('all');
@@ -63,6 +64,14 @@ export default function CareersPage() {
   const [jobs, setJobs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setSearchTerm(searchInput.trim());
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,7 +84,7 @@ export default function CareersPage() {
     };
     const cached = readCachedJobs(params);
 
-    if (cached) {
+    if (cached?.length) {
       setJobs(cached);
       setIsLoading(false);
     } else {
@@ -85,13 +94,13 @@ export default function CareersPage() {
     async function loadJobs() {
       setLoadError('');
       try {
-        const results = await fetchJobs(params, { force: Boolean(cached) });
+        const results = await fetchJobs(params, { force: Boolean(cached?.length) });
         if (!cancelled) {
           setJobs(results);
         }
       } catch {
         if (!cancelled) {
-          if (!cached) {
+          if (!cached?.length) {
             setJobs([]);
           }
           setLoadError('Could not load jobs. Make sure the backend is running on port 8000.');
@@ -108,12 +117,27 @@ export default function CareersPage() {
     };
   }, [employmentType, location, experience, source, searchTerm]);
 
+  const hasActiveFilters =
+    searchTerm ||
+    employmentType !== 'all' ||
+    location !== 'all' ||
+    experience !== 'all' ||
+    source !== 'all';
+
+  function clearFilters() {
+    setSearchInput('');
+    setSearchTerm('');
+    setEmploymentType('all');
+    setLocation('all');
+    setExperience('all');
+    setSource('all');
+  }
+
   return (
     <>
       <CareersHero
-        query={query}
-        onQueryChange={setQuery}
-        onSearch={() => setSearchTerm(query)}
+        query={searchInput}
+        onQueryChange={setSearchInput}
         employmentType={employmentType}
         onEmploymentTypeChange={setEmploymentType}
         location={location}
@@ -122,6 +146,8 @@ export default function CareersPage() {
         onExperienceChange={setExperience}
         source={source}
         onSourceChange={setSource}
+        onClearFilters={clearFilters}
+        hasActiveFilters={hasActiveFilters}
       />
 
       <section className="w-full max-w-full overflow-x-hidden bg-ivory px-4 pb-12 pt-8 sm:px-8 lg:px-10">
@@ -148,9 +174,18 @@ export default function CareersPage() {
           </div>
 
           {!isLoading && !loadError && jobs.length === 0 && (
-            <p className="mt-8 rounded-lg border border-ink/10 bg-white px-4 py-6 text-sm text-ink/70">
-              No roles matched your filters. Try another keyword or broaden your search.
-            </p>
+            <div className="mt-8 rounded-lg border border-ink/10 bg-white px-4 py-6 text-sm text-ink/70">
+              <p>No roles matched your filters. Try another keyword or broaden your search.</p>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="mt-4 inline-flex items-center justify-center rounded-full bg-tide px-5 py-2.5 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
           )}
         </div>
       </section>

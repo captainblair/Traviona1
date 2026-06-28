@@ -414,6 +414,62 @@ class RecruitmentPermissionTests(TestCase):
         self.assertIn('Software Engineer', titles)
         self.assertNotIn('Tea Buyer', titles)
 
+    def test_job_list_experience_filter_matches_title_keywords(self):
+        JobPosting.objects.create(
+            title='Shop and Deliver - No Experience Required',
+            slug='shop-no-experience',
+            summary='Flexible shopper role',
+            location='Feasterville',
+            source_name='Adzuna United States',
+        )
+        JobPosting.objects.create(title='Senior Policy Analyst', slug='senior-policy-analyst', summary='Advisory role', location='Kenya')
+
+        response = self.client.get(reverse('job-list'), {'experience_level': 'entry', 'page_size': 50})
+        self.assertEqual(response.status_code, 200)
+        titles = [item['title'] for item in response.json()['results']]
+        self.assertIn('Shop and Deliver - No Experience Required', titles)
+        self.assertNotIn('Senior Policy Analyst', titles)
+
+    def test_job_list_location_united_states_matches_adzuna_source(self):
+        JobPosting.objects.create(
+            title='US Analyst',
+            slug='us-analyst-location',
+            source_name='Adzuna United States',
+            location='Feasterville, Bucks County',
+        )
+        JobPosting.objects.create(
+            title='Kenya Analyst',
+            slug='kenya-analyst-location',
+            source_name='MyJobMag Kenya',
+            location='Kenya',
+        )
+
+        response = self.client.get(reverse('job-list'), {'location': 'united states', 'page_size': 50})
+        self.assertEqual(response.status_code, 200)
+        titles = [item['title'] for item in response.json()['results']]
+        self.assertIn('US Analyst', titles)
+        self.assertNotIn('Kenya Analyst', titles)
+
+    def test_job_list_remote_employment_type_matches_remote_location(self):
+        JobPosting.objects.create(
+            title='Remote Research Consultant',
+            slug='remote-research-consultant',
+            location='Remote',
+            employment_type='contract',
+        )
+        JobPosting.objects.create(
+            title='Office Manager',
+            slug='office-manager',
+            location='Nairobi, Kenya',
+            employment_type='full_time',
+        )
+
+        response = self.client.get(reverse('job-list'), {'employment_type': 'remote', 'page_size': 50})
+        self.assertEqual(response.status_code, 200)
+        titles = [item['title'] for item in response.json()['results']]
+        self.assertIn('Remote Research Consultant', titles)
+        self.assertNotIn('Office Manager', titles)
+
     def test_job_list_prioritizes_myjobmag_when_all_sources(self):
         JobPosting.objects.create(
             title='US Analyst',

@@ -1,4 +1,4 @@
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { employmentTypeOptions, experienceOptions, locationOptions, sourceOptions } from '../data/jobFilters.js';
 
 function FilterSelect({ id, label, value, onChange, options }) {
@@ -27,7 +27,6 @@ function FilterSelect({ id, label, value, onChange, options }) {
 export default function CareersHero({
   query,
   onQueryChange,
-  onSearch,
   employmentType,
   onEmploymentTypeChange,
   location,
@@ -36,6 +35,8 @@ export default function CareersHero({
   onExperienceChange,
   source,
   onSourceChange,
+  onClearFilters,
+  hasActiveFilters = false,
 }) {
   return (
     <section className="relative w-full max-w-full overflow-x-hidden bg-ink text-white">
@@ -65,7 +66,6 @@ export default function CareersHero({
             className="flex flex-col gap-3"
             onSubmit={(event) => {
               event.preventDefault();
-              onSearch?.();
             }}
           >
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -80,13 +80,6 @@ export default function CareersHero({
                 placeholder="Search by keyword or title..."
                 className="w-full rounded-full border border-ink/12 px-5 py-3.5 text-sm text-ink outline-none ring-tide/30 placeholder:text-ink/45 focus:ring-2"
               />
-              <button
-                type="submit"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-tide px-6 py-3.5 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white"
-              >
-                <Search className="h-4 w-4" aria-hidden="true" />
-                Search
-              </button>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -113,7 +106,7 @@ export default function CareersHero({
               />
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <FilterSelect
                 id="jobs-source"
                 label="Source"
@@ -121,6 +114,15 @@ export default function CareersHero({
                 onChange={onSourceChange}
                 options={sourceOptions}
               />
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={onClearFilters}
+                  className="inline-flex shrink-0 items-center justify-center rounded-full border border-ink/12 px-5 py-3 text-sm font-semibold text-ink transition hover:border-harbor hover:text-harbor"
+                >
+                  Clear filters
+                </button>
+              )}
             </div>
           </form>
         </div>

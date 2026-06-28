@@ -5,6 +5,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.core.permissions import IsRecruiterRole, has_role
+from .filters import apply_employment_type_filter, apply_experience_filter, apply_job_search, apply_location_filter, apply_source_filter
 from .models import ApplicationStatusHistory, ExternalJobSource, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
 from .pagination import JobPagination
 from .serializers import ExternalJobSourceSerializer, JobApplicationSerializer, JobPostingListSerializer, JobPostingSerializer, RecruitmentNotificationSerializer, TalentProfileSerializer
@@ -47,31 +48,14 @@ class JobListView(generics.ListCreateAPIView):
         queryset = super().get_queryset()
         params = self.request.query_params
 
-        search_term = (params.get('search') or params.get('q') or '').strip()
-        if search_term:
-            queryset = queryset.filter(
-                Q(title__icontains=search_term)
-                | Q(summary__icontains=search_term)
-                | Q(description__icontains=search_term)
-                | Q(location__icontains=search_term)
-                | Q(source_name__icontains=search_term)
-            )
-
-        location = (params.get('location') or '').strip()
-        if location and location.lower() != 'all':
-            queryset = queryset.filter(location__icontains=location.replace('-', ' '))
-
-        employment_type = (params.get('employment_type') or '').strip()
-        if employment_type and employment_type.lower() != 'all':
-            queryset = queryset.filter(employment_type=employment_type)
-
-        experience_level = (params.get('experience_level') or '').strip()
-        if experience_level and experience_level.lower() != 'all':
-            queryset = queryset.filter(experience_level__icontains=experience_level.replace('-', ' '))
+        queryset = apply_job_search(queryset, params.get('search') or params.get('q'))
+        queryset = apply_location_filter(queryset, params.get('location'))
+        queryset = apply_employment_type_filter(queryset, params.get('employment_type'))
+        queryset = apply_experience_filter(queryset, params.get('experience_level'))
 
         source_name = (params.get('source') or '').strip()
         if source_name and source_name.lower() != 'all':
-            queryset = queryset.filter(source_name__icontains=source_name.replace('-', ' '))
+            queryset = apply_source_filter(queryset, source_name)
         else:
             queryset = prioritize_kenya_and_myjobmag(queryset)
 

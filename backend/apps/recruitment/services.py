@@ -7,6 +7,7 @@ from urllib.request import Request, urlopen
 from django.conf import settings
 from django.utils import timezone
 
+from .filters import infer_experience_level
 from .models import ExternalJobSource, JobPosting
 from .scrapers.myjobmag import fetch_myjobmag_jobs
 
@@ -293,7 +294,8 @@ def sync_external_jobs(payloads, source=None):
             'location': item.get('location', source.default_location if source else ''),
             'employment_type': item.get('employment_type', source.default_employment_type if source else 'full_time'),
             'salary_range': item.get('salary_range', ''),
-            'experience_level': item.get('experience_level', ''),
+            'experience_level': item.get('experience_level')
+            or infer_experience_level(title, item.get('summary', ''), item.get('description', '')),
             'source_name': item.get('source_name', source.name if source else ''),
             'source_url': item.get('source_url', ''),
             'external_id': item.get('external_id', ''),

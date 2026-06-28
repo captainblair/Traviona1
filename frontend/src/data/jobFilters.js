@@ -12,7 +12,7 @@ export const locationOptions = [
   { id: 'nairobi', label: 'Nairobi' },
   { id: 'london', label: 'London, UK' },
   { id: 'remote', label: 'Remote' },
-  { id: 'united states', label: 'United States' },
+  { id: 'united states', label: 'United States (Adzuna)' },
   { id: 'south africa', label: 'South Africa' },
 ];
 
