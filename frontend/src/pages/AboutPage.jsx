@@ -26,21 +26,31 @@ const leaders = [
   {
     name: 'Dr. Tony Wangolo',
     role: 'Managing Director',
-    image: '/images/tony.jpeg',
-    imageHeight: '185%',
-    imageWidth: '112%',
-    imageTop: '-10%',
-    imageLeft: '50%',
-    imageTransform: 'translateX(-50%)',
-    imagePosition: 'center 10%',
-    mobileImageHeight: '260%',
-    mobileImageWidth: '125%',
-    mobileImageTop: '-22%',
-    mobileImagePosition: 'center 6%',
+    image: '/images/leader-tony.jpg',
+    socialUrl: 'https://www.linkedin.com/in/tony-wangolo-545b23285/',
+    socialLabel: 'LinkedIn',
   },
-  { name: 'Dr. Yvette Oster', role: 'Chief Strategy Officer', initials: 'YO' },
-  { name: 'James Okello', role: 'Director, Global Affairs', initials: 'JO' },
-  { name: 'Sarah Chen', role: 'Head of Talent Network', initials: 'SC' },
+  {
+    name: 'Dr. Yvette Oster',
+    role: 'Chief Strategy Officer',
+    image: '/images/leader-oster.jpg',
+    socialUrl: 'https://x.com/Tony_Blair01',
+    socialLabel: 'X',
+  },
+  {
+    name: 'James Okello',
+    role: 'Director, Global Affairs',
+    image: '/images/leader-james.jpg',
+    socialUrl: 'https://www.linkedin.com/in/tony-wangolo-545b23285/',
+    socialLabel: 'LinkedIn',
+  },
+  {
+    name: 'Sarah Chen',
+    role: 'Head of Talent Network',
+    image: '/images/leader-sara.jpg',
+    socialUrl: 'https://x.com/Tony_Blair01',
+    socialLabel: 'X',
+  },
 ];
 
 const globalOffices = [
@@ -50,47 +60,24 @@ const globalOffices = [
   { city: 'Singapore', left: '72%', top: '54%' },
 ];
 
-function LeaderAvatar({
-  image,
-  initials,
-  name,
-  imageHeight = '100%',
-  imageWidth = '100%',
-  imageTop = '0',
-  imageLeft = '0',
-  imageTransform,
-  imagePosition = 'center top',
-  mobileImageHeight,
-  mobileImageWidth,
-  mobileImageTop,
-  mobileImagePosition,
-  compact = false,
-}) {
+function LeaderAvatar({ image, initials, name, compact = false }) {
   const sizeClass = compact
-    ? 'mx-auto h-[7.75rem] w-[7.75rem] sm:h-36 sm:w-36'
-    : 'mx-auto h-32 w-32 sm:h-40 sm:w-40 lg:h-44 lg:w-44';
-
-  const height = compact && mobileImageHeight ? mobileImageHeight : imageHeight;
-  const width = compact && mobileImageWidth ? mobileImageWidth : imageWidth;
-  const top = compact && mobileImageTop !== undefined ? mobileImageTop : imageTop;
-  const position = compact && mobileImagePosition ? mobileImagePosition : imagePosition;
+    ? 'mx-auto h-36 w-36'
+    : 'mx-auto h-40 w-40 lg:h-44 lg:w-44';
 
   if (image) {
     return (
-      <span className={`relative block shrink-0 overflow-hidden rounded-full bg-mist ring-2 ring-ink/10 ${sizeClass}`}>
+      <span
+        className={`leader-avatar relative block shrink-0 overflow-hidden rounded-full bg-[#eef2f6] ring-2 ring-ink/10 ${sizeClass}`}
+      >
         <img
           src={image}
           alt={name}
-          decoding="async"
-          className="absolute max-w-none object-cover"
-          style={{
-            height,
-            width,
-            top,
-            left: imageLeft,
-            transform: imageTransform,
-            objectPosition: position,
-          }}
+          width={512}
+          height={512}
+          decoding="sync"
+          loading="eager"
+          className="h-full w-full object-cover object-center"
         />
       </span>
     );
@@ -104,6 +91,32 @@ function LeaderAvatar({
     >
       {initials}
     </span>
+  );
+}
+
+function XIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function LeaderSocialLink({ name, url, platform }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-2 inline-flex items-center justify-center text-harbor transition hover:text-tide sm:mt-3"
+      aria-label={`${name} on ${platform}`}
+    >
+      {platform === 'LinkedIn' ? (
+        <Linkedin className="h-4 w-4" aria-hidden="true" />
+      ) : (
+        <XIcon className="h-4 w-4" />
+      )}
+    </a>
   );
 }
 
@@ -133,31 +146,12 @@ function GlobalMapPins({ showLabels = true }) {
 function LeadershipCards({ compact = false, className = '' }) {
   return (
     <div className={`grid grid-cols-2 gap-4 sm:gap-5 ${compact ? '' : 'lg:grid-cols-4'} ${className}`}>
-      {leaders.map(
-        (
-          {
-            name,
-            role,
-            initials,
-            image,
-            imageHeight,
-            imageWidth,
-            imageTop,
-            imageLeft,
-            imageTransform,
-            imagePosition,
-            mobileImageHeight,
-            mobileImageWidth,
-            mobileImageTop,
-            mobileImagePosition,
-          },
-          index,
-        ) => (
+      {leaders.map(({ name, role, initials, image, socialUrl, socialLabel }, index) => (
           <RevealItem
             key={name}
             delay={index * 100}
             className={`min-w-0 rounded-lg border border-ink/8 bg-white p-4 text-center shadow-[0_10px_28px_rgba(7,19,31,0.06)] sm:p-5 ${
-              compact ? 'shadow-[0_16px_40px_rgba(7,19,31,0.18)] backdrop-blur-sm' : 'sm:p-6'
+              compact ? 'shadow-[0_16px_40px_rgba(7,19,31,0.18)]' : 'sm:p-6'
             }`}
           >
             <LeaderAvatar
@@ -165,33 +159,14 @@ function LeadershipCards({ compact = false, className = '' }) {
               initials={initials}
               name={name}
               compact={compact}
-              imageHeight={imageHeight}
-              imageWidth={imageWidth}
-              imageTop={imageTop}
-              imageLeft={imageLeft}
-              imageTransform={imageTransform}
-              imagePosition={imagePosition}
-              mobileImageHeight={mobileImageHeight}
-              mobileImageWidth={mobileImageWidth}
-              mobileImageTop={mobileImageTop}
-              mobileImagePosition={mobileImagePosition}
             />
             <h3 className="mt-3 break-words font-display text-sm font-bold leading-5 text-ink sm:mt-4 sm:text-base">
               {name}
             </h3>
             <p className="mt-1 break-words text-xs leading-5 text-ink/60">{role}</p>
-            <a
-              href="https://linkedin.com"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-flex items-center justify-center text-harbor transition hover:text-tide sm:mt-3"
-              aria-label={`${name} on LinkedIn`}
-            >
-              <Linkedin className="h-4 w-4" aria-hidden="true" />
-            </a>
+            <LeaderSocialLink name={name} url={socialUrl} platform={socialLabel} />
           </RevealItem>
-        ),
-      )}
+        ))}
     </div>
   );
 }

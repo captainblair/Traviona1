@@ -73,6 +73,18 @@ canvas {
   .site-header-logo img {
     transform: translate3d(0, 0, 0);
   }
+
+  /* Pre-cropped leadership avatars — keep faces sharp when scaled in circles */
+  .leader-avatar {
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .leader-avatar img {
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 .hero-copy {

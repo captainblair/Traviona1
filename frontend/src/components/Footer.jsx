@@ -26,8 +26,8 @@ const legalLinks = [
 ];
 
 const socialLinks = [
-  { label: 'LinkedIn', href: 'https://linkedin.com', Icon: Linkedin },
-  { label: 'X (Twitter)', href: 'https://x.com', Icon: XIcon },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/tony-wangolo-545b23285/', Icon: Linkedin },
+  { label: 'X (Twitter)', href: 'https://x.com/Tony_Blair01', Icon: XIcon },
   { label: 'Instagram', href: 'https://instagram.com', Icon: Instagram },
 ];
 
