@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function useReveal(delay = 0) {
+export function useReveal(delay = 0, motion = 'rise') {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
+  const motionClass = motion === 'fade' ? 'reveal--fade' : '';
 
   useEffect(() => {
     const element = ref.current;
@@ -29,13 +30,13 @@ export function useReveal(delay = 0) {
 
   return {
     ref,
-    className: visible ? 'reveal is-visible' : 'reveal',
+    className: visible ? `reveal is-visible ${motionClass}`.trim() : `reveal ${motionClass}`.trim(),
     style: { '--reveal-delay': `${delay}ms` },
   };
 }
 
-export function RevealSection({ children, className = '', delay = 0, ...props }) {
-  const reveal = useReveal(delay);
+export function RevealSection({ children, className = '', delay = 0, motion = 'rise', ...props }) {
+  const reveal = useReveal(delay, motion);
   return (
     <section ref={reveal.ref} className={`${reveal.className} ${className}`} style={reveal.style} {...props}>
       {children}
@@ -43,8 +44,8 @@ export function RevealSection({ children, className = '', delay = 0, ...props })
   );
 }
 
-export function RevealItem({ children, className = '', delay = 0, as: Tag = 'div', ...props }) {
-  const reveal = useReveal(delay);
+export function RevealItem({ children, className = '', delay = 0, motion = 'rise', as: Tag = 'div', ...props }) {
+  const reveal = useReveal(delay, motion);
   return (
     <Tag ref={reveal.ref} className={`${reveal.className} ${className}`} style={reveal.style} {...props}>
       {children}

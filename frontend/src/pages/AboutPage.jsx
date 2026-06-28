@@ -11,6 +11,7 @@ import {
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer.jsx';
 import PageHero from '../components/PageHero.jsx';
+import { RevealItem, RevealSection } from '../components/reveal.jsx';
 import { teamMembers } from '../data/teamMembers.js';
 
 const missionValues = [
@@ -128,38 +129,34 @@ function GlobalMapPins({ showLabels = true }) {
   );
 }
 
-function MissionValuesList() {
+function MissionValuesGrid() {
   return (
-    <>
-      <ul className="about-values-mobile mt-6 lg:hidden">
-        {missionValues.map(({ label }) => (
-          <li key={label} className="about-values-mobile-item">
-            <span className="about-values-mobile-dot" aria-hidden="true" />
-            <span className="about-values-mobile-label">{label}</span>
-          </li>
-        ))}
-      </ul>
-
-      <ul className="about-values-desktop mt-6 hidden lg:grid lg:grid-cols-2 lg:gap-4">
-        {missionValues.map(({ label, icon: Icon }) => (
-          <li key={label} className="about-values-desktop-item">
-            <span className="about-values-desktop-icon" aria-hidden="true">
-              <Icon className="h-5 w-5" strokeWidth={1.75} />
-            </span>
-            <span className="about-values-desktop-label">{label}</span>
-          </li>
-        ))}
-      </ul>
-    </>
+    <div className="about-values-grid mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+      {missionValues.map(({ label, icon: Icon }, index) => (
+        <RevealItem
+          key={label}
+          motion="fade"
+          delay={index * 80}
+          className="about-values-card flex min-w-0 flex-col items-center rounded-md border border-ink/10 bg-white px-2 py-4 text-center shadow-[0_8px_24px_rgba(7,19,31,0.05)] sm:px-3 sm:py-5"
+        >
+          <span className="about-values-icon grid h-10 w-10 shrink-0 place-items-center rounded-full bg-tide/12 text-harbor sm:h-11 sm:w-11">
+            <Icon className="block h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+          </span>
+          <p className="mt-3 text-xs font-semibold leading-snug text-ink/80 sm:text-sm">{label}</p>
+        </RevealItem>
+      ))}
+    </div>
   );
 }
 
 function LeadershipCards({ compact = false, className = '' }) {
   return (
     <div className={`grid grid-cols-2 gap-4 sm:gap-5 ${compact ? '' : 'lg:grid-cols-4'} ${className}`}>
-      {leaders.map(({ name, role, initials, image, socialUrl, socialLabel }) => (
-        <article
+      {leaders.map(({ name, role, initials, image, socialUrl, socialLabel }, index) => (
+        <RevealItem
           key={name}
+          motion="fade"
+          delay={index * 100}
           className={`min-w-0 rounded-lg border border-ink/8 bg-white p-4 text-center shadow-[0_10px_28px_rgba(7,19,31,0.06)] sm:p-5 ${
             compact ? 'shadow-[0_16px_40px_rgba(7,19,31,0.18)]' : 'sm:p-6'
           }`}
@@ -170,7 +167,7 @@ function LeadershipCards({ compact = false, className = '' }) {
           </h3>
           <p className="mt-1 break-words text-xs leading-5 text-ink/60">{role}</p>
           <LeaderSocialLink name={name} url={socialUrl} platform={socialLabel} />
-        </article>
+        </RevealItem>
       ))}
     </div>
   );
@@ -186,11 +183,12 @@ export default function AboutPage() {
         secondaryCta={{ label: 'Discover Services', href: '/#services' }}
       />
 
-      <section
+      <RevealSection
         id="our-story"
-        className="w-full max-w-full overflow-x-hidden bg-white px-4 py-14 sm:px-8 sm:py-16 lg:px-10"
+        motion="fade"
+        className="about-page-section w-full max-w-full overflow-x-hidden bg-white px-4 py-14 sm:px-8 sm:py-16 lg:px-10"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-10 lg:grid-cols-2 lg:items-start lg:gap-12">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
           <div className="min-w-0">
             <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">Our Story</h2>
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-[1fr_minmax(0,11rem)] sm:items-start">
@@ -213,17 +211,18 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="about-values-panel min-w-0 pt-10 lg:pt-0">
+          <div className="min-w-0 border-t border-ink/8 pt-10 lg:border-t-0 lg:pt-0">
             <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">Mission &amp; Values</h2>
-            <MissionValuesList />
+            <MissionValuesGrid />
           </div>
         </div>
-      </section>
+      </RevealSection>
 
       {/* Mobile: full-screen global map with leadership overlaid */}
-      <section
+      <RevealSection
         id="leadership"
-        className="relative min-h-[100svh] w-full max-w-full overflow-x-hidden lg:hidden"
+        motion="fade"
+        className="about-page-section relative min-h-[100svh] w-full max-w-full overflow-x-hidden lg:hidden"
       >
         <div className="pointer-events-none absolute inset-0 min-h-full" aria-hidden="true">
           <img
@@ -268,22 +267,22 @@ export default function AboutPage() {
             </Link>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
       {/* Desktop: separate leadership and global sections */}
-      <section
+      <RevealSection
         id="leadership-desktop"
-        className="hidden w-full max-w-full overflow-x-hidden bg-ivory px-4 py-14 sm:px-8 sm:py-16 lg:block lg:px-10"
+        className="about-page-section hidden w-full max-w-full overflow-x-hidden bg-ivory px-4 py-14 sm:px-8 sm:py-16 lg:block lg:px-10"
       >
         <div className="mx-auto w-full max-w-7xl">
           <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">Leadership Team</h2>
           <LeadershipCards className="mt-8" />
         </div>
-      </section>
+      </RevealSection>
 
-      <section
+      <RevealSection
         id="global-presence-desktop"
-        className="hidden w-full max-w-full overflow-x-hidden bg-midnight px-4 py-14 text-white sm:px-8 sm:py-16 lg:block lg:px-10"
+        className="about-page-section hidden w-full max-w-full overflow-x-hidden bg-midnight px-4 py-14 text-white sm:px-8 sm:py-16 lg:block lg:px-10"
       >
         <div className="mx-auto w-full max-w-7xl">
           <h2 className="font-display text-2xl font-bold sm:text-3xl">Global Presence</h2>
@@ -308,7 +307,7 @@ export default function AboutPage() {
             ))}
           </div>
         </div>
-      </section>
+      </RevealSection>
 
       <section className="hidden w-full max-w-full overflow-x-hidden bg-white px-4 py-14 text-center sm:px-8 sm:py-16 lg:block lg:px-10">
         <div className="mx-auto w-full max-w-2xl">
