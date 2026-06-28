@@ -817,11 +817,38 @@ canvas {
 .admin-topbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.875rem;
   border-bottom: 1px solid rgba(7, 19, 31, 0.08);
   background: rgba(255, 255, 255, 0.92);
   padding: 1rem 1.25rem;
   backdrop-filter: blur(8px);
+}
+
+.admin-topbar-start {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.admin-topbar-site-link {
+  display: inline-flex;
+  shrink: 0;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(7, 19, 31, 0.12);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0e7c86;
+  white-space: nowrap;
+}
+
+.admin-topbar-site-link:hover {
+  border-color: #2bc4b6;
+  background: #f0fdfa;
 }
 
 .admin-topbar-kicker {

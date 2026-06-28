@@ -1,4 +1,5 @@
 import {
+  ArrowLeft,
   BriefcaseBusiness,
   ExternalLink,
   FileText,
@@ -89,7 +90,7 @@ export default function AdminLayout() {
             <ExternalLink className="h-4 w-4" aria-hidden="true" />
             Website CMS (Django)
           </a>
-          <Link to="/" className="admin-foot-link">
+          <Link to="/" className="admin-foot-link" onClick={() => setSidebarOpen(false)}>
             View public site
           </Link>
           <button type="button" onClick={handleLogout} className="admin-foot-link admin-foot-link-danger">
@@ -110,18 +111,24 @@ export default function AdminLayout() {
 
       <div className="admin-main">
         <header className="admin-topbar">
-          <button
-            type="button"
-            className="admin-menu-btn lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <div>
-            <p className="admin-topbar-kicker">Traviona console</p>
-            <h1 className="admin-topbar-title">Administration</h1>
+          <div className="admin-topbar-start">
+            <button
+              type="button"
+              className="admin-menu-btn lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div>
+              <p className="admin-topbar-kicker">Traviona console</p>
+              <h1 className="admin-topbar-title">Administration</h1>
+            </div>
           </div>
+          <Link to="/" className="admin-topbar-site-link lg:hidden">
+            <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Public site
+          </Link>
         </header>
 
         <main className="admin-content">
