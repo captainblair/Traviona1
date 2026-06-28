@@ -1,9 +1,8 @@
 import { dummyJobs } from '../data/dummyJobs.js';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import { API_BASE, resolveApiUrl } from './apiBase.js';
 
 function buildJobsUrl({ expertise, location, experience, query } = {}) {
-  const url = new URL(`${API_BASE}/recruitment/jobs/`);
+  const url = resolveApiUrl('/recruitment/jobs/');
 
   if (query?.trim()) {
     url.searchParams.set('q', query.trim());

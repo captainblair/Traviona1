@@ -1,9 +1,8 @@
 import { dummyInsights } from '../data/dummyInsights.js';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import { resolveApiUrl } from './apiBase.js';
 
 function buildInsightsUrl({ category, query } = {}) {
-  const url = new URL(`${API_BASE}/insights/`);
+  const url = resolveApiUrl('/insights/');
 
   if (category && category !== 'all') {
     url.searchParams.set('category', category);

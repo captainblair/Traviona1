@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import { API_BASE } from './apiBase.js';
 
 const ACCESS_KEY = 'traviona_access';
 const REFRESH_KEY = 'traviona_refresh';

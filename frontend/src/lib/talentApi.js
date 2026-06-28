@@ -1,9 +1,8 @@
 import { dummyTalents } from '../data/dummyTalents.js';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import { resolveApiUrl } from './apiBase.js';
 
 function buildTalentsUrl({ expertise, query } = {}) {
-  const url = new URL(`${API_BASE}/recruitment/talents/`);
+  const url = resolveApiUrl('/recruitment/talents/');
 
   if (expertise && expertise !== 'all') {
     url.searchParams.set('specialization', expertise.replace('-', ' '));
