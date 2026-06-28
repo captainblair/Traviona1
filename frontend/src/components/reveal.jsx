@@ -33,7 +33,8 @@ export function useInView(threshold = 0.12) {
 export function useReveal(delay = 0, motion = 'rise') {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
-  const motionClass = motion === 'fade' ? 'reveal--fade' : '';
+  const motionClass =
+    motion === 'fade' ? 'reveal--fade' : motion === 'hold' ? 'reveal--hold' : '';
 
   useEffect(() => {
     const element = ref.current;
@@ -51,7 +52,7 @@ export function useReveal(delay = 0, motion = 'rise') {
           observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.1, rootMargin: '0px 0px -6% 0px' },
+      { threshold: 0.08, rootMargin: '0px 0px 10% 0px' },
     );
 
     observer.observe(element);

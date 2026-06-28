@@ -126,7 +126,7 @@ canvas {
 }
 
 .hero-copy {
-  animation: hero-rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: hero-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .reveal {
@@ -136,15 +136,23 @@ canvas {
 
 .reveal:not(.is-visible) {
   opacity: 0;
-  transform: translateY(56px);
+  transform: translateY(32px);
 }
 
 .reveal.is-visible {
   opacity: 1;
   transform: translate3d(0, 0, 0);
   transition:
-    opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
-    transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+    opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+}
+
+/* Section shell stays visible — only inner RevealItems animate */
+.reveal--hold:not(.is-visible),
+.reveal--hold.is-visible {
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 
 .reveal--fade:not(.is-visible) {
@@ -155,7 +163,7 @@ canvas {
 .reveal--fade.is-visible {
   opacity: 1;
   transform: none;
-  transition: opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
 }
 
 @media (min-width: 1024px) {
@@ -168,15 +176,15 @@ canvas {
     opacity: 1;
     transform: translate3d(0, 0, 0);
     transition:
-      opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
-      transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+      opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+      transform 0.65s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
   }
 }
 
 @keyframes hero-rise {
   from {
     opacity: 0;
-    transform: translateY(36px);
+    transform: translateY(24px);
   }
 
   to {

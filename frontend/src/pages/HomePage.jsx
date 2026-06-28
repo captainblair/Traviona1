@@ -23,45 +23,63 @@ export default function HomePage() {
         secondaryCta={{ label: 'Discover Services', href: '#services' }}
       />
 
-      <RevealSection id="services" className="w-full max-w-full overflow-x-hidden bg-white px-4 py-14 sm:px-8 sm:py-16 lg:px-10">
-        <div className="mx-auto w-full max-w-7xl">
-          <div className="max-w-2xl pl-0 md:pl-8">
+      <RevealSection
+        id="services"
+        motion="hold"
+        className="relative w-full max-w-full overflow-x-hidden border-t border-harbor/10 bg-gradient-to-br from-tide/15 via-ivory to-brass/10 px-4 py-14 sm:px-8 sm:py-16 lg:px-10"
+      >
+        <div
+          className="pointer-events-none absolute -right-24 top-8 h-56 w-56 rounded-full bg-tide/20 blur-3xl"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute -left-20 bottom-4 h-48 w-48 rounded-full bg-brass/15 blur-3xl"
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto w-full max-w-7xl">
+          <RevealItem delay={0} className="max-w-2xl pl-0 md:pl-8">
             <h2 className="font-display text-3xl font-bold text-ink">What We Do</h2>
-          </div>
+          </RevealItem>
 
           <div className="mt-8 grid w-full min-w-0 grid-cols-1 gap-5 md:grid-cols-3 xl:grid-cols-5">
             {services.length === 0 ? (
               <p className="col-span-full text-sm text-ink/50">Loading services…</p>
             ) : (
               services.map(({ slug, title, cardText, image }, index) => (
-              <RevealItem
-                key={slug}
-                as="article"
-                delay={index * 120}
-                className="w-full min-w-0 max-w-full rounded-md border border-ink/5 bg-white p-5 shadow-[0_14px_38px_rgba(7,19,31,0.08)] transition duration-300 hover:shadow-[0_18px_48px_rgba(7,19,31,0.13)] motion-safe:hover:-translate-y-1"
-              >
-                <img
-                  src={image}
-                  alt=""
-                  className="h-9 w-9 rounded object-cover ring-1 ring-ink/5"
-                  aria-hidden="true"
-                />
-                <h3 className="mt-5 break-words font-display text-lg font-bold leading-6 text-ink sm:min-h-[3rem]">{title}</h3>
-                <p className="mt-3 text-xs leading-5 text-ink/62 sm:min-h-[4.5rem]">{cardText}</p>
-                <Link to={`/services/${slug}`} className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-harbor">
-                  Learn More
-                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-                </Link>
-              </RevealItem>
+                <RevealItem
+                  key={slug}
+                  as="article"
+                  delay={index * 50}
+                  className="w-full min-w-0 max-w-full rounded-md border border-ink/5 bg-white p-5 shadow-[0_14px_38px_rgba(7,19,31,0.08)] transition duration-300 hover:shadow-[0_18px_48px_rgba(7,19,31,0.13)] motion-safe:hover:-translate-y-1"
+                >
+                  <img
+                    src={image}
+                    alt=""
+                    className="h-9 w-9 rounded object-cover ring-1 ring-ink/5"
+                    aria-hidden="true"
+                  />
+                  <h3 className="mt-5 break-words font-display text-lg font-bold leading-6 text-ink sm:min-h-[3rem]">
+                    {title}
+                  </h3>
+                  <p className="mt-3 text-xs leading-5 text-ink/62 sm:min-h-[4.5rem]">{cardText}</p>
+                  <Link to={`/services/${slug}`} className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-harbor">
+                    Learn More
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                </RevealItem>
               ))
             )}
           </div>
         </div>
       </RevealSection>
 
-      <RevealSection id="about" className="w-full max-w-full overflow-x-hidden bg-white px-4 py-14 sm:px-8 sm:py-20 lg:px-10">
+      <RevealSection
+        id="about"
+        motion="hold"
+        className="relative w-full max-w-full overflow-x-hidden bg-gradient-to-br from-ivory via-tide/[0.07] to-ivory px-4 py-14 sm:px-8 sm:py-20 lg:px-10"
+      >
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="min-w-0">
+          <RevealItem delay={0} className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-brass sm:text-sm sm:tracking-[0.2em]">Our Story</p>
             <h2 className="mt-3 text-balance font-display text-3xl font-bold leading-tight text-ink sm:text-4xl">
               Built for leaders navigating shifting realities
@@ -74,7 +92,7 @@ export default function HomePage() {
               Read our full story
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </a>
-          </div>
+          </RevealItem>
           <div className="grid w-full min-w-0 grid-cols-1 gap-4 text-center sm:grid-cols-3">
             {[
               ['50+', 'Countries monitored'],
@@ -83,11 +101,13 @@ export default function HomePage() {
             ].map(([value, label], index) => (
               <RevealItem
                 key={label}
-                delay={index * 140}
-                className="min-w-0 rounded-lg border border-ink/10 bg-mist/40 p-6"
+                delay={60 + index * 50}
+                className="min-w-0 rounded-lg border border-ink/10 bg-white/90 p-6 shadow-[0_8px_24px_rgba(7,19,31,0.05)]"
               >
                 <p className="font-display text-4xl font-bold text-harbor">{value}</p>
-                <p className="mt-2 break-words text-xs font-semibold uppercase tracking-[0.08em] text-ink/60 sm:tracking-[0.14em]">{label}</p>
+                <p className="mt-2 break-words text-xs font-semibold uppercase tracking-[0.08em] text-ink/60 sm:tracking-[0.14em]">
+                  {label}
+                </p>
               </RevealItem>
             ))}
           </div>
@@ -96,8 +116,12 @@ export default function HomePage() {
 
       <TestimonialsSection />
 
-      <RevealSection id="careers" className="w-full max-w-full overflow-x-hidden bg-midnight px-4 py-14 text-white sm:px-8 sm:py-20 lg:px-10">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+      <RevealSection
+        id="careers"
+        motion="hold"
+        className="w-full max-w-full overflow-x-hidden bg-midnight px-4 py-14 text-white sm:px-8 sm:py-20 lg:px-10"
+      >
+        <RevealItem delay={0} className="mx-auto flex w-full max-w-7xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-tide sm:text-sm sm:tracking-[0.2em]">Careers</p>
             <h2 className="mt-3 text-balance font-display text-3xl font-bold leading-tight sm:text-4xl">
@@ -114,11 +138,18 @@ export default function HomePage() {
             <BriefcaseBusiness className="h-4 w-4" aria-hidden="true" />
             View Careers
           </Link>
-        </div>
+        </RevealItem>
       </RevealSection>
 
-      <RevealSection id="talent-network" className="w-full max-w-full overflow-x-hidden bg-ivory px-4 py-14 sm:px-8 sm:py-20 lg:px-10">
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+      <RevealSection
+        id="talent-network"
+        motion="hold"
+        className="w-full max-w-full overflow-x-hidden border-t border-ink/5 bg-ivory px-4 py-14 sm:px-8 sm:py-20 lg:px-10"
+      >
+        <RevealItem
+          delay={0}
+          className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center"
+        >
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-harbor sm:text-sm sm:tracking-[0.2em]">
               Talent Network
@@ -138,7 +169,7 @@ export default function HomePage() {
             Browse Experts
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
-        </div>
+        </RevealItem>
       </RevealSection>
     </>
   );
