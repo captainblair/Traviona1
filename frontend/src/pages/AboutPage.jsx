@@ -11,7 +11,7 @@ import {
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer.jsx';
 import PageHero from '../components/PageHero.jsx';
-import { RevealItem, RevealSection } from '../components/reveal.jsx';
+import { RevealItem, RevealSection, useInView } from '../components/reveal.jsx';
 import { teamMembers } from '../data/teamMembers.js';
 
 const missionValues = [
@@ -130,22 +130,44 @@ function GlobalMapPins({ showLabels = true }) {
 }
 
 function MissionValuesGrid() {
+  const { ref, visible } = useInView();
+
   return (
-    <div className="about-values-grid mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-      {missionValues.map(({ label, icon: Icon }, index) => (
-        <RevealItem
-          key={label}
-          motion="fade"
-          delay={index * 80}
-          className="about-values-card flex min-w-0 flex-col items-center rounded-md border border-ink/10 bg-white px-2 py-4 text-center shadow-[0_8px_24px_rgba(7,19,31,0.05)] sm:px-3 sm:py-5"
-        >
-          <span className="about-values-icon grid h-10 w-10 shrink-0 place-items-center rounded-full bg-tide/12 text-harbor sm:h-11 sm:w-11">
-            <Icon className="block h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-          </span>
-          <p className="mt-3 text-xs font-semibold leading-snug text-ink/80 sm:text-sm">{label}</p>
-        </RevealItem>
-      ))}
-    </div>
+    <>
+      <div
+        ref={ref}
+        className={`about-values-grid about-values-grid--mobile mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:hidden${visible ? ' is-in-view' : ''}`}
+      >
+        {missionValues.map(({ label, icon: Icon }, index) => (
+          <div
+            key={label}
+            className="about-values-card flex min-w-0 flex-col items-center rounded-md border border-ink/10 bg-white px-2 py-4 text-center shadow-[0_8px_24px_rgba(7,19,31,0.05)] sm:px-3 sm:py-5"
+            style={{ '--i': index }}
+          >
+            <span className="about-values-icon grid h-10 w-10 shrink-0 place-items-center rounded-full bg-tide/12 text-harbor sm:h-11 sm:w-11">
+              <Icon className="block h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+            </span>
+            <p className="about-values-label mt-3 text-xs font-semibold leading-snug text-ink/80 sm:text-sm">{label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="about-values-grid about-values-grid--desktop mt-6 hidden grid-cols-3 gap-4 lg:grid">
+        {missionValues.map(({ label, icon: Icon }, index) => (
+          <RevealItem
+            key={label}
+            motion="fade"
+            delay={index * 80}
+            className="about-values-card flex min-w-0 flex-col items-center rounded-md border border-ink/10 bg-white px-3 py-5 text-center shadow-[0_8px_24px_rgba(7,19,31,0.05)]"
+          >
+            <span className="about-values-icon grid h-11 w-11 shrink-0 place-items-center rounded-full bg-tide/12 text-harbor">
+              <Icon className="block h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+            </span>
+            <p className="mt-3 text-sm font-semibold leading-snug text-ink/80">{label}</p>
+          </RevealItem>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -185,7 +207,6 @@ export default function AboutPage() {
 
       <RevealSection
         id="our-story"
-        motion="fade"
         className="about-page-section w-full max-w-full overflow-x-hidden bg-white px-4 py-14 sm:px-8 sm:py-16 lg:px-10"
       >
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
@@ -221,7 +242,6 @@ export default function AboutPage() {
       {/* Mobile: full-screen global map with leadership overlaid */}
       <RevealSection
         id="leadership"
-        motion="fade"
         className="about-page-section relative min-h-[100svh] w-full max-w-full overflow-x-hidden lg:hidden"
       >
         <div className="pointer-events-none absolute inset-0 min-h-full" aria-hidden="true">
