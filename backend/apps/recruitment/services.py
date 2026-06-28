@@ -300,7 +300,8 @@ def sync_external_jobs(payloads, source=None):
             'raw_payload': item.get('raw_payload', item),
             'is_active': True,
         }
-        external_id = defaults['external_id']
+        external_id = str(defaults['external_id'])[:100]
+        defaults['external_id'] = external_id
         if external_id:
             seen_external_ids.add(external_id)
         if external_id:

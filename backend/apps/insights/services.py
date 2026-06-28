@@ -359,7 +359,7 @@ def sync_external_insights(payloads, source=None):
 
     for item in payloads:
         title = item.get('title', '').strip()
-        external_id = item.get('external_id', '').strip()
+        external_id = item.get('external_id', '').strip()[:100]
         if not title:
             continue
 
@@ -387,12 +387,12 @@ def sync_external_insights(payloads, source=None):
             'content': content,
             'category': category,
             'category_ref': category_ref,
-            'author_name': item.get('author_name', ''),
-            'tags': item.get('tags', ''),
+            'author_name': (item.get('author_name', '') or '')[:200],
+            'tags': (item.get('tags', '') or '')[:500],
             'read_time_minutes': item.get('read_time_minutes', _estimate_read_time(item.get('content', ''), item.get('summary', ''))),
-            'source_name': item.get('source_name', source.name if source else ''),
-            'source_url': item.get('source_url', ''),
-            'featured_image_url': item.get('featured_image_url') or _image_from_raw_payload(item.get('raw_payload')),
+            'source_name': (item.get('source_name', source.name if source else '') or '')[:100],
+            'source_url': (item.get('source_url', '') or '')[:2048],
+            'featured_image_url': ((item.get('featured_image_url') or _image_from_raw_payload(item.get('raw_payload'))) or '')[:2048],
             'external_id': external_id,
             'raw_payload': item.get('raw_payload', item),
             'moderation_status': moderation_status,

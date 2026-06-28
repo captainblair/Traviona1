@@ -4,7 +4,7 @@ from django.utils.text import slugify
 
 class InsightCategory(models.Model):
     name = models.CharField(max_length=120)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
 
@@ -23,7 +23,7 @@ class InsightCategory(models.Model):
 
 class InsightTag(models.Model):
     name = models.CharField(max_length=80)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
 
     class Meta:
         ordering = ['name']
@@ -93,11 +93,11 @@ class Insight(models.Model):
     ]
 
     title = models.CharField(max_length=250)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
     summary = models.TextField(blank=True)
     content = models.TextField(blank=True)
     featured_image = models.ImageField(upload_to='insights/', blank=True, null=True)
-    featured_image_url = models.URLField(blank=True)
+    featured_image_url = models.URLField(max_length=2048, blank=True)
     category = models.CharField(max_length=40, choices=CATEGORY_CHOICES, default='global_trends')
     category_ref = models.ForeignKey(InsightCategory, related_name='insights', on_delete=models.SET_NULL, blank=True, null=True)
     tag_refs = models.ManyToManyField(InsightTag, related_name='insights', blank=True)
@@ -106,7 +106,7 @@ class Insight(models.Model):
     tags = models.CharField(max_length=500, blank=True)
     read_time_minutes = models.PositiveIntegerField(default=5)
     source_name = models.CharField(max_length=100, blank=True)
-    source_url = models.URLField(blank=True)
+    source_url = models.URLField(max_length=2048, blank=True)
     external_id = models.CharField(max_length=100, blank=True)
     raw_payload = models.JSONField(blank=True, null=True)
     moderation_status = models.CharField(max_length=30, choices=MODERATION_STATUS_CHOICES, default='draft')
@@ -119,6 +119,7 @@ class Insight(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        self.slug = (self.slug or 'insight')[:250]
         super().save(*args, **kwargs)
 
     def __str__(self):

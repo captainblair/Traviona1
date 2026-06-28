@@ -12,7 +12,7 @@ class JobPosting(models.Model):
     ]
 
     title = models.CharField(max_length=250)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
     summary = models.TextField(blank=True)
     description = models.TextField(blank=True)
     location = models.CharField(max_length=200, blank=True)
