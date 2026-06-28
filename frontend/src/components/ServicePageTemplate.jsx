@@ -15,16 +15,16 @@ import Footer from './Footer.jsx';
 import { RevealItem, RevealSection } from './reveal.jsx';
 
 const iconComponents = {
-  Globe2,
-  Layers,
-  LineChart,
-  BriefcaseBusiness,
-  ShieldCheck,
-  Users,
-  AlertTriangle,
-  Handshake,
-  MapPin,
-  Search,
+  globe: Globe2,
+  layers: Layers,
+  chart: LineChart,
+  briefcase: BriefcaseBusiness,
+  shield: ShieldCheck,
+  users: Users,
+  alert: AlertTriangle,
+  handshake: Handshake,
+  map: MapPin,
+  search: Search,
 };
 
 export default function ServicePageTemplate({ service }) {

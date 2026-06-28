@@ -42,6 +42,7 @@ async function parseResponse(response) {
       payload.username?.[0] ||
       payload.email?.[0] ||
       payload.password?.[0] ||
+      payload.new_password?.[0] ||
       'Request failed';
     throw new Error(Array.isArray(detail) ? detail[0] : detail);
   }
@@ -78,6 +79,17 @@ export async function register({ username, email, password, first_name, last_nam
   return payload.user;
 }
 
+export async function socialLogin({ provider, access_token }) {
+  const response = await fetch(`${API_BASE}/users/social-login/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider, access_token }),
+  });
+  const payload = await parseResponse(response);
+  persistSession(payload);
+  return payload.user;
+}
+
 export async function fetchCurrentUser() {
   const token = getAccessToken();
   if (!token) return null;
@@ -104,6 +116,15 @@ export async function requestPasswordReset(email) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
+  });
+  return parseResponse(response);
+}
+
+export async function confirmPasswordReset({ uid, token, new_password }) {
+  const response = await fetch(`${API_BASE}/users/password/reset/confirm/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uid, token, new_password }),
   });
   return parseResponse(response);
 }

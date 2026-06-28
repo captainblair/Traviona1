@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import Footer from '../components/Footer.jsx';
 import PageHero from '../components/PageHero.jsx';
 import { RevealItem, RevealSection } from '../components/reveal.jsx';
+import { teamMembers } from '../data/teamMembers.js';
 
 const missionValues = [
   { label: 'Global Impact', icon: Globe2 },
@@ -22,36 +23,13 @@ const missionValues = [
   { label: 'Integrity', icon: ShieldCheck },
 ];
 
-const leaders = [
-  {
-    name: 'Dr. Tony Wangolo',
-    role: 'Managing Director',
-    image: '/images/leader-tony.jpg',
-    socialUrl: 'https://www.linkedin.com/in/tony-wangolo-545b23285/',
-    socialLabel: 'LinkedIn',
-  },
-  {
-    name: 'Dr. Yvette Oster',
-    role: 'Chief Strategy Officer',
-    image: '/images/leader-oster.jpg',
-    socialUrl: 'https://x.com/Tony_Blair01',
-    socialLabel: 'X',
-  },
-  {
-    name: 'James Okello',
-    role: 'Director, Global Affairs',
-    image: '/images/leader-james.jpg',
-    socialUrl: 'https://www.linkedin.com/in/tony-wangolo-545b23285/',
-    socialLabel: 'LinkedIn',
-  },
-  {
-    name: 'Sarah Chen',
-    role: 'Head of Talent Network',
-    image: '/images/leader-sara.jpg',
-    socialUrl: 'https://x.com/Tony_Blair01',
-    socialLabel: 'X',
-  },
-];
+const leaders = teamMembers.map(({ name, role, image, socialUrl, socialLabel }) => ({
+  name,
+  role,
+  image,
+  socialUrl,
+  socialLabel,
+}));
 
 const globalOffices = [
   { city: 'London', left: '46%', top: '28%' },

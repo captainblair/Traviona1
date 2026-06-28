@@ -1,5 +1,5 @@
 from django.contrib.auth.tokens import default_token_generator
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.utils.encoding import force_bytes
@@ -131,3 +131,47 @@ class AuthSmokeTests(TestCase):
         user = User.objects.get(email='social@example.com')
         self.assertEqual(user.social_provider, 'google')
         self.assertEqual(user.social_uid, 'google-123')
+
+    @override_settings(BOOTSTRAP_ADMIN_EMAILS=['owner@traviona.com'])
+    def test_bootstrap_admin_email_becomes_admin_on_register(self):
+        response = self.client.post(reverse('register'), {
+            'username': 'owner',
+            'email': 'owner@traviona.com',
+            'password': 'StrongPass123!',
+            'first_name': 'Site',
+            'last_name': 'Owner',
+        }, format='json')
+        self.assertEqual(response.status_code, 201)
+        user = User.objects.get(email='owner@traviona.com')
+        self.assertEqual(user.role, 'admin')
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.is_superuser)
+        self.assertEqual(response.json()['user']['role'], 'admin')
+
+    @override_settings(BOOTSTRAP_ADMIN_EMAILS=['owner@traviona.com'])
+    def test_non_bootstrap_email_stays_public(self):
+        response = self.client.post(reverse('register'), {
+            'username': 'member',
+            'email': 'member@example.com',
+            'password': 'StrongPass123!',
+        }, format='json')
+        self.assertEqual(response.status_code, 201)
+        user = User.objects.get(email='member@example.com')
+        self.assertEqual(user.role, 'public')
+        self.assertFalse(user.is_staff)
+
+    @override_settings(BOOTSTRAP_ADMIN_EMAILS=['owner@traviona.com'])
+    def test_bootstrap_admin_email_promoted_on_login(self):
+        User.objects.create_user(
+            username='owner',
+            email='owner@traviona.com',
+            password='StrongPass123!',
+        )
+        response = self.client.post(reverse('login'), {
+            'username': 'owner',
+            'password': 'StrongPass123!',
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        user = User.objects.get(email='owner@traviona.com')
+        self.assertEqual(user.role, 'admin')
+        self.assertEqual(response.json()['user']['role'], 'admin')

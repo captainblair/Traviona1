@@ -1,11 +1,21 @@
 import json
 import os
-from urllib.parse import urlencode
+import re
+from urllib.parse import parse_qs, urlencode, urlparse
 from urllib.request import Request, urlopen
 
+from django.conf import settings
 from django.utils import timezone
 
 from .models import ExternalJobSource, JobPosting
+from .scrapers.myjobmag import fetch_myjobmag_jobs
+
+
+def _get_env_secret(name, default=''):
+    configured = getattr(settings, name, None)
+    if configured:
+        return configured
+    return os.environ.get(name, default)
 
 
 def _read_json_url(url, headers=None, data=None):
@@ -65,7 +75,7 @@ def fetch_lever_jobs(source):
 
 
 def fetch_workable_jobs(source):
-    token = os.environ.get(source.api_key_env, '') if source.api_key_env else ''
+    token = _get_env_secret(source.api_key_env) if source.api_key_env else ''
     headers = {'Authorization': f'Bearer {token}'} if token else {}
     data = _read_json_url(source.endpoint_url, headers=headers)
     jobs = data.get('jobs', data.get('results', []))
@@ -111,32 +121,75 @@ def fetch_ashby_jobs(source):
 
 
 def fetch_adzuna_jobs(source):
-    app_id = os.environ.get(source.api_key_env, '') if source.api_key_env else os.environ.get('ADZUNA_APP_ID', '')
-    app_key = os.environ.get(source.api_secret_env, '') if source.api_secret_env else os.environ.get('ADZUNA_APP_KEY', '')
-    separator = '&' if '?' in source.endpoint_url else '?'
-    data = _read_json_url(f'{source.endpoint_url}{separator}{urlencode({"app_id": app_id, "app_key": app_key})}')
+    app_id = _get_env_secret(source.api_key_env or 'ADZUNA_APP_ID')
+    app_key = _get_env_secret(source.api_secret_env or 'ADZUNA_APP_KEY')
+    if not app_id or not app_key:
+        return []
+
+    parsed = urlparse(source.endpoint_url)
+    query = parse_qs(parsed.query)
+    max_pages = max(1, min(int(query.get('max_pages', ['1'])[0]), 10))
+    results_per_page = query.get('results_per_page', ['50'])[0]
+    country_match = re.search(r'/jobs/([a-z]{2})/search/', parsed.path)
+    country_code = country_match.group(1) if country_match else 'xx'
+
     payloads = []
-    for job in data.get('results', []):
-        title = job.get('title', '')
-        if not title:
-            continue
-        payloads.append({
-            'title': title,
-            'summary': job.get('description', '')[:300],
-            'description': job.get('description', ''),
-            'location': job.get('location', {}).get('display_name', source.default_location),
-            'employment_type': source.default_employment_type,
-            'salary_range': str(job.get('salary_is_predicted', '')) if job.get('salary_is_predicted') else '',
-            'source_name': source.name,
-            'source_url': job.get('redirect_url', ''),
-            'external_id': str(job.get('id') or job.get('redirect_url') or title),
-            'raw_payload': job,
-        })
+    seen_ids = set()
+
+    for page in range(1, max_pages + 1):
+        page_path = re.sub(r'/search/\d+/?$', f'/search/{page}', parsed.path.rstrip('/'))
+        page_url = f'{parsed.scheme}://{parsed.netloc}{page_path}'
+        separator = '&' if '?' in page_url else '?'
+        request_url = (
+            f'{page_url}{separator}'
+            f'{urlencode({"app_id": app_id, "app_key": app_key, "results_per_page": results_per_page})}'
+        )
+        data = _read_json_url(request_url)
+
+        for job in data.get('results', []):
+            title = job.get('title', '')
+            if not title:
+                continue
+
+            job_id = str(job.get('id') or job.get('redirect_url') or title)
+            external_id = f'adzuna:{country_code}:{job_id}'
+            if external_id in seen_ids:
+                continue
+            seen_ids.add(external_id)
+
+            salary_min = job.get('salary_min')
+            salary_max = job.get('salary_max')
+            salary_range = ''
+            if salary_min and salary_max:
+                salary_range = f'{salary_min} - {salary_max}'
+
+            payloads.append({
+                'title': title,
+                'summary': job.get('description', '')[:300],
+                'description': job.get('description', ''),
+                'location': job.get('location', {}).get('display_name', source.default_location),
+                'employment_type': source.default_employment_type,
+                'salary_range': salary_range,
+                'source_name': source.name,
+                'source_url': job.get('redirect_url', ''),
+                'external_id': external_id,
+                'slug': slugify_adzuna_slug(country_code, job_id, title),
+                'raw_payload': job,
+            })
+
     return payloads
 
 
+def slugify_adzuna_slug(country_code, job_id, title):
+    from django.utils.text import slugify
+
+    base = slugify(title)[:180] or 'job'
+    suffix = slugify(str(job_id))[:40] or country_code
+    return f'{base}-{suffix}'[:240]
+
+
 def fetch_jooble_jobs(source):
-    api_key = os.environ.get(source.api_key_env, '') if source.api_key_env else os.environ.get('JOOBLE_API_KEY', '')
+    api_key = _get_env_secret(source.api_key_env or 'JOOBLE_API_KEY')
     body = json.dumps({}).encode('utf-8')
     url = source.endpoint_url.format(api_key=api_key)
     data = _read_json_url(url, headers={'Content-Type': 'application/json'}, data=body)
@@ -216,6 +269,7 @@ def fetch_external_job_source_payloads(source):
         'adzuna': fetch_adzuna_jobs,
         'jooble': fetch_jooble_jobs,
         'remoteok': fetch_remoteok_jobs,
+        'myjobmag': fetch_myjobmag_jobs,
         'custom_json': fetch_custom_json_jobs,
     }
     return fetchers.get(source.provider, fetch_custom_json_jobs)(source)
@@ -223,6 +277,9 @@ def fetch_external_job_source_payloads(source):
 
 def sync_external_jobs(payloads, source=None):
     created_count = 0
+    updated_count = 0
+    seen_external_ids = set()
+
     for item in payloads:
         title = item.get('title', '').strip()
         if not title:
@@ -230,6 +287,7 @@ def sync_external_jobs(payloads, source=None):
 
         defaults = {
             'title': title,
+            'slug': JobPosting.slug_from_external_item(item, title),
             'summary': item.get('summary', ''),
             'description': item.get('description', ''),
             'location': item.get('location', source.default_location if source else ''),
@@ -240,28 +298,48 @@ def sync_external_jobs(payloads, source=None):
             'source_url': item.get('source_url', ''),
             'external_id': item.get('external_id', ''),
             'raw_payload': item.get('raw_payload', item),
+            'is_active': True,
         }
         external_id = defaults['external_id']
         if external_id:
-            job, created = JobPosting.objects.get_or_create(external_id=external_id, defaults=defaults)
+            seen_external_ids.add(external_id)
+        if external_id:
+            job, created = JobPosting.objects.update_or_create(external_id=external_id, defaults=defaults)
         elif defaults['source_url']:
-            existing = JobPosting.objects.filter(source_url=defaults['source_url']).first()
-            created = existing is None
-            job = existing or JobPosting.objects.create(**defaults)
+            job, created = JobPosting.objects.update_or_create(source_url=defaults['source_url'], defaults=defaults)
         else:
-            existing = JobPosting.objects.filter(title=title, source_name=defaults['source_name']).first()
-            created = existing is None
-            job = existing or JobPosting.objects.create(**defaults)
+            job, created = JobPosting.objects.update_or_create(
+                title=title,
+                source_name=defaults['source_name'],
+                defaults=defaults,
+            )
         if created:
             created_count += 1
-    return created_count
+        else:
+            updated_count += 1
+
+    deactivated_count = 0
+    if source and seen_external_ids:
+        deactivated_count = (
+            JobPosting.objects.filter(is_active=True, source_name=source.name)
+            .exclude(external_id='')
+            .exclude(external_id__in=seen_external_ids)
+            .update(is_active=False)
+        )
+
+    return created_count, updated_count, deactivated_count
 
 
 def sync_configured_external_jobs():
     created_count = 0
+    updated_count = 0
+    deactivated_count = 0
     for source in ExternalJobSource.objects.filter(is_active=True):
         payloads = fetch_external_job_source_payloads(source)
-        created_count += sync_external_jobs(payloads, source=source)
+        created, updated, deactivated = sync_external_jobs(payloads, source=source)
+        created_count += created
+        updated_count += updated
+        deactivated_count += deactivated
         source.last_synced_at = timezone.now()
         source.save(update_fields=['last_synced_at'])
-    return created_count
+    return created_count, updated_count, deactivated_count

@@ -5,6 +5,7 @@ from unittest.mock import patch
 from rest_framework.test import APIClient
 
 from apps.recruitment.models import ApplicationStatusHistory, ExternalJobSource, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
+from apps.recruitment.scrapers.myjobmag import _parse_listing_page, fetch_myjobmag_jobs
 from apps.recruitment.services import fetch_custom_json_jobs, fetch_greenhouse_jobs, sync_configured_external_jobs, sync_external_jobs
 from apps.recruitment.tasks import sync_configured_external_jobs_task, sync_external_jobs_task
 
@@ -76,6 +77,79 @@ class ExternalJobSyncTests(TestCase):
         self.assertEqual(payloads[0]['location'], 'Nairobi')
         self.assertEqual(payloads[0]['external_id'], '123')
 
+    def test_myjobmag_parser_maps_listing_cards(self):
+        html = """
+        <ul class="job-list">
+          <li>
+            <h2><a href="/job/graphic-designer-people-foco-2">Graphic Designer at People Foco Agency LTD</a></h2>
+            <ul>
+              <li class="job-desc">Creative design role based in Nairobi.</li>
+            </ul>
+          </li>
+        </ul>
+        """
+        payloads = _parse_listing_page(html, 'MyJobMag Kenya', 'Kenya', 'https://www.myjobmag.co.ke')
+
+        self.assertEqual(len(payloads), 1)
+        self.assertEqual(payloads[0]['title'], 'Graphic Designer')
+        self.assertEqual(payloads[0]['raw_payload']['company'], 'People Foco Agency LTD')
+        self.assertEqual(payloads[0]['location'], 'Kenya')
+        self.assertEqual(payloads[0]['external_id'], 'myjobmag:graphic-designer-people-foco-2')
+        self.assertTrue(payloads[0]['source_url'].endswith('/job/graphic-designer-people-foco-2'))
+
+    def test_myjobmag_fetcher_uses_scraper(self):
+        source = ExternalJobSource.objects.create(
+            name='MyJobMag Kenya',
+            provider='myjobmag',
+            endpoint_url='https://www.myjobmag.co.ke/jobs?max_pages=1',
+            default_location='Kenya',
+        )
+
+        with patch('apps.recruitment.scrapers.myjobmag.scrape_myjobmag_listings') as scrape:
+            scrape.return_value = [
+                {
+                    'title': 'Software Engineer',
+                    'summary': 'Tech role',
+                    'description': 'Tech role',
+                    'location': 'Kenya',
+                    'employment_type': 'full_time',
+                    'source_name': 'MyJobMag Kenya',
+                    'source_url': 'https://www.myjobmag.co.ke/job/software-engineer',
+                    'external_id': 'myjobmag:software-engineer',
+                    'raw_payload': {},
+                }
+            ]
+            payloads = fetch_myjobmag_jobs(source)
+
+        self.assertEqual(len(payloads), 1)
+        self.assertEqual(payloads[0]['external_id'], 'myjobmag:software-engineer')
+
+    def test_sync_external_jobs_uses_unique_slugs_for_duplicate_titles(self):
+        payloads = [
+            {
+                'title': 'Software Engineer',
+                'summary': 'Role A',
+                'external_id': 'myjobmag:software-engineer-a',
+                'slug': 'software-engineer-a',
+                'source_name': 'MyJobMag Kenya',
+                'source_url': 'https://www.myjobmag.co.ke/job/software-engineer-a',
+            },
+            {
+                'title': 'Software Engineer',
+                'summary': 'Role B',
+                'external_id': 'myjobmag:software-engineer-b',
+                'slug': 'software-engineer-b',
+                'source_name': 'MyJobMag Kenya',
+                'source_url': 'https://www.myjobmag.co.ke/job/software-engineer-b',
+            },
+        ]
+
+        created, _updated, _deactivated = sync_external_jobs(payloads)
+
+        self.assertEqual(created, 2)
+        slugs = list(JobPosting.objects.order_by('external_id').values_list('slug', flat=True))
+        self.assertEqual(slugs, ['software-engineer-a', 'software-engineer-b'])
+
     def test_configured_external_job_sync_updates_source_timestamp(self):
         source = ExternalJobSource.objects.create(
             name='Configured Feed',
@@ -92,7 +166,7 @@ class ExternalJobSyncTests(TestCase):
                     'external_id': 'configured-1',
                 }
             ]
-            created = sync_configured_external_jobs()
+            created, _updated, _deactivated = sync_configured_external_jobs()
 
         source.refresh_from_db()
         self.assertEqual(created, 1)
@@ -100,7 +174,7 @@ class ExternalJobSyncTests(TestCase):
         self.assertTrue(JobPosting.objects.filter(external_id='configured-1').exists())
 
     def test_external_jobs_task_returns_created_count(self):
-        created = sync_external_jobs_task([
+        result = sync_external_jobs_task([
             {
                 'title': 'Task Job',
                 'source_name': 'Task Feed',
@@ -109,14 +183,15 @@ class ExternalJobSyncTests(TestCase):
             }
         ])
 
-        self.assertEqual(created, 1)
+        self.assertEqual(result['created'], 1)
         self.assertTrue(JobPosting.objects.filter(external_id='task-job-1').exists())
 
     def test_configured_external_jobs_task_runs_sync(self):
         with patch('apps.recruitment.tasks.sync_configured_external_jobs') as sync_jobs:
-            sync_jobs.return_value = 3
+            sync_jobs.return_value = (3, 2, 1)
 
-            self.assertEqual(sync_configured_external_jobs_task(), 3)
+            result = sync_configured_external_jobs_task()
+            self.assertEqual(result, {'created': 3, 'updated': 2, 'deactivated': 1})
 
 
 class RecruitmentPermissionTests(TestCase):
@@ -315,7 +390,7 @@ class RecruitmentPermissionTests(TestCase):
         self.assertEqual(response.json()['results'][0]['job'], first_job.id)
 
     def test_sync_external_jobs_creates_posts_from_payload(self):
-        created = sync_external_jobs([
+        created, _updated, _deactivated = sync_external_jobs([
             {
                 'title': 'Data Analyst',
                 'summary': 'A new opening',
@@ -328,6 +403,73 @@ class RecruitmentPermissionTests(TestCase):
 
         self.assertEqual(created, 1)
         self.assertTrue(JobPosting.objects.filter(external_id='gh-1').exists())
+
+    def test_job_list_supports_keyword_search(self):
+        JobPosting.objects.create(title='Software Engineer', slug='software-engineer', summary='Build APIs', location='Kenya')
+        JobPosting.objects.create(title='Tea Buyer', slug='tea-buyer', summary='Commodity role', location='Kenya')
+
+        response = self.client.get(reverse('job-list'), {'search': 'software', 'page_size': 50})
+        self.assertEqual(response.status_code, 200)
+        titles = [item['title'] for item in response.json()['results']]
+        self.assertIn('Software Engineer', titles)
+        self.assertNotIn('Tea Buyer', titles)
+
+    def test_job_list_prioritizes_myjobmag_when_all_sources(self):
+        JobPosting.objects.create(
+            title='US Analyst',
+            slug='us-analyst',
+            source_name='Adzuna United States',
+            location='New York',
+        )
+        JobPosting.objects.create(
+            title='Nairobi Consultant',
+            slug='nairobi-consultant',
+            source_name='MyJobMag Kenya',
+            location='Nairobi, Kenya',
+        )
+
+        response = self.client.get(reverse('job-list'), {'page_size': 50})
+        self.assertEqual(response.status_code, 200)
+        titles = [item['title'] for item in response.json()['results']]
+        self.assertEqual(titles[0], 'Nairobi Consultant')
+
+    def test_sync_deactivates_jobs_removed_from_external_source(self):
+        source = ExternalJobSource.objects.create(
+            name='MyJobMag Kenya',
+            provider='myjobmag',
+            endpoint_url='https://www.myjobmag.co.ke/jobs',
+        )
+        JobPosting.objects.create(
+            title='Old Role',
+            slug='old-role',
+            source_name='MyJobMag Kenya',
+            external_id='myjobmag:old-role',
+            is_active=True,
+        )
+        JobPosting.objects.create(
+            title='Current Role',
+            slug='current-role',
+            source_name='MyJobMag Kenya',
+            external_id='myjobmag:current-role',
+            is_active=True,
+        )
+
+        _created, _updated, deactivated = sync_external_jobs(
+            [
+                {
+                    'title': 'Current Role',
+                    'summary': 'Still live',
+                    'source_name': 'MyJobMag Kenya',
+                    'source_url': 'https://www.myjobmag.co.ke/job/current-role',
+                    'external_id': 'myjobmag:current-role',
+                }
+            ],
+            source=source,
+        )
+
+        self.assertEqual(deactivated, 1)
+        self.assertFalse(JobPosting.objects.get(external_id='myjobmag:old-role').is_active)
+        self.assertTrue(JobPosting.objects.get(external_id='myjobmag:current-role').is_active)
 
     def test_recruiter_can_update_application_status(self):
         recruiter = User.objects.create_user(username='recruiter2', password='StrongPass123!', role='recruiter')

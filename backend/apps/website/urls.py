@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import (
     AboutPageView,
+    AssistantChatView,
+    AssistantConfigView,
     ContactEnquiryCreateView,
     ContactInformationView,
     GlobalPresenceListView,
@@ -19,4 +21,6 @@ urlpatterns = [
     path('contact/', ContactInformationView.as_view(), name='contact-information'),
     path('contact/enquiries/', ContactEnquiryCreateView.as_view(), name='contact-enquiry-create'),
     path('global-presence/', GlobalPresenceListView.as_view(), name='global-presence-list'),
+    path('assistant/config/', AssistantConfigView.as_view(), name='assistant-config'),
+    path('assistant/chat/', AssistantChatView.as_view(), name='assistant-chat'),
 ]

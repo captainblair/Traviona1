@@ -58,3 +58,24 @@ class WebsitePublicEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['detailed_description'], 'Detailed risk advisory support.')
         self.assertEqual(response.json()['seo_title'], 'Risk Advisory Services')
+
+    def test_assistant_config_is_public(self):
+        response = self.client.get(reverse('assistant-config'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['name'], 'Traviona Assistant')
+        self.assertIn(response.json()['mode'], {'local', 'ai'})
+        self.assertGreaterEqual(len(response.json()['starter_questions']), 3)
+
+    def test_assistant_chat_uses_local_fallback_without_api_key(self):
+        response = self.client.post(
+            reverse('assistant-chat'),
+            data={'messages': [{'role': 'user', 'content': 'What services do you offer?'}]},
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('text/event-stream', response['Content-Type'])
+        body = b''.join(response.streaming_content).decode('utf-8')
+        self.assertIn('Global St', body)
+        self.assertIn('"done"', body)

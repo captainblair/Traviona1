@@ -10,45 +10,39 @@ function initials(name) {
 export default function ExpertPhoto({
   name,
   image,
-  imageHeight = '100%',
-  imageWidth = '100%',
-  imageTop = '0',
-  imageLeft = '0',
-  imageTransform,
-  imagePosition = 'center top',
+  objectPosition = 'center center',
   compact = false,
   className = '',
 }) {
-  const frameClass = compact ? 'h-28 w-28 shrink-0' : 'h-52 w-full sm:h-56';
+  const frameClass = compact
+    ? 'h-24 w-24 shrink-0 rounded-full'
+    : 'h-36 w-36 rounded-full sm:h-40 sm:w-40';
 
-  if (image) {
-    return (
-      <div className={`relative overflow-hidden bg-mist ${compact ? 'rounded-md' : 'rounded-t-lg'} ${frameClass} ${className}`}>
-        <img
-          src={image}
-          alt={name}
-          decoding="async"
-          className="absolute max-w-none object-cover"
-          style={{
-            height: imageHeight,
-            width: imageWidth,
-            top: imageTop,
-            left: imageLeft,
-            transform: imageTransform,
-            objectPosition: imagePosition,
-          }}
-        />
-      </div>
-    );
+  const photo = image ? (
+    <div className={`relative overflow-hidden bg-[#eef2f6] ring-2 ring-ink/10 ${frameClass}`}>
+      <img
+        src={image}
+        alt={name}
+        decoding="async"
+        className="h-full w-full object-cover"
+        style={{ objectPosition }}
+      />
+    </div>
+  ) : (
+    <div
+      className={`grid place-items-center bg-gradient-to-br from-ink/90 to-midnight text-lg font-bold text-white sm:text-xl ${frameClass}`}
+    >
+      {initials(name)}
+    </div>
+  );
+
+  if (compact) {
+    return <div className={className}>{photo}</div>;
   }
 
   return (
-    <div
-      className={`grid place-items-center bg-gradient-to-br from-ink/90 to-midnight text-xl font-bold text-white ${
-        compact ? 'rounded-md' : 'rounded-t-lg'
-      } ${frameClass} ${className}`}
-    >
-      {initials(name)}
+    <div className={`flex justify-center bg-gradient-to-b from-mist/60 to-white px-4 pb-2 pt-6 ${className}`}>
+      {photo}
     </div>
   );
 }

@@ -63,6 +63,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             'description',
             'icon_name',
             'featured_image',
+            'metadata',
             'display_order',
             'is_active',
         ]
@@ -82,6 +83,7 @@ class ServiceDetailSerializer(serializers.ModelSerializer):
             'process',
             'icon_name',
             'featured_image',
+            'metadata',
             'seo_title',
             'seo_description',
             'seo_keywords',

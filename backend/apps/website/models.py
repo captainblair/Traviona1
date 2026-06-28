@@ -75,6 +75,7 @@ class Service(models.Model):
     process = models.TextField(blank=True)
     icon_name = models.CharField(max_length=100, blank=True)
     featured_image = models.ImageField(upload_to='website/services/', blank=True, null=True)
+    metadata = models.JSONField(blank=True, null=True, help_text='Optional structured content: image, benefits, whyChoose, ctaHref, etc.')
     seo_title = models.CharField(max_length=200, blank=True)
     seo_description = models.CharField(max_length=300, blank=True)
     seo_keywords = models.CharField(max_length=300, blank=True)

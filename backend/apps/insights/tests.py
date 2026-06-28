@@ -5,7 +5,13 @@ from unittest.mock import patch
 from rest_framework.test import APIClient
 
 from apps.insights.models import ExternalInsightSource, Insight, InsightAuthor, InsightCategory, InsightTag
-from apps.insights.services import parse_rss_feed, sync_configured_external_sources, sync_external_insights
+from apps.insights.services import (
+    _article_summary_and_content,
+    _infer_category,
+    parse_rss_feed,
+    sync_configured_external_sources,
+    sync_external_insights,
+)
 from apps.insights.tasks import sync_configured_external_insights_task, sync_external_insights_task
 
 User = get_user_model()
@@ -140,7 +146,7 @@ class InsightDraftPermissionsTests(TestCase):
         self.assertFalse(insight.is_published)
 
     def test_sync_external_insights_creates_posts_from_payload(self):
-        created = sync_external_insights([
+        created, _updated = sync_external_insights([
             {
                 'title': 'Market Update',
                 'summary': 'Latest analysis',
@@ -168,17 +174,18 @@ class InsightDraftPermissionsTests(TestCase):
         self.assertFalse(insight.is_published)
 
     def test_sync_external_insights_task_returns_created_count(self):
-        created = sync_external_insights_task([
+        result = sync_external_insights_task([
             {
                 'title': 'Task Imported Draft',
                 'summary': 'Queued import',
                 'source_name': 'GNews',
                 'source_url': 'https://news.example/4',
+                'external_id': 'gnews:task-4',
             }
         ])
 
-        self.assertEqual(created, 1)
-        self.assertTrue(Insight.objects.filter(title='Task Imported Draft').exists())
+        self.assertEqual(result['created'], 1)
+        self.assertTrue(Insight.objects.filter(external_id='gnews:task-4').exists())
 
     def test_public_taxonomy_endpoints_return_categories_tags_and_authors(self):
         InsightCategory.objects.create(name='Security')
@@ -269,6 +276,47 @@ class InsightDraftPermissionsTests(TestCase):
         self.assertEqual(payloads[0]['title'], 'RSS Insight')
         self.assertEqual(payloads[0]['source_name'], 'Example RSS')
 
+    def test_rss_parser_extracts_media_thumbnail(self):
+        payloads = parse_rss_feed("""
+            <rss xmlns:media="http://search.yahoo.com/mrss/"><channel>
+                <item>
+                    <title>Image Story</title>
+                    <link>https://news.example/rss-image</link>
+                    <description>With image</description>
+                    <media:thumbnail url="https://cdn.example/thumb.jpg" />
+                </item>
+            </channel></rss>
+        """, source_name='Example RSS')
+
+        self.assertEqual(payloads[0]['featured_image_url'], 'https://cdn.example/thumb.jpg')
+
+    def test_rss_parser_strips_html_from_description(self):
+        payloads = parse_rss_feed("""
+            <rss><channel>
+                <item>
+                    <title>HTML Story</title>
+                    <link>https://news.example/html-story</link>
+                    <description><p>First paragraph.</p><ul><li>Point one</li><li>Point two</li></ul></description>
+                </item>
+            </channel></rss>
+        """, source_name='Example RSS')
+
+        self.assertEqual(payloads[0]['summary'], 'First paragraph.')
+        self.assertIn('Point one', payloads[0]['content'])
+        self.assertNotIn('<p>', payloads[0]['content'])
+
+    def test_html_to_plain_text_strips_newsapi_truncation(self):
+        summary, content = _article_summary_and_content(
+            'Markets rally on strong earnings.',
+            'Markets rally on strong earnings. [+120 chars]',
+        )
+        self.assertEqual(content, 'Markets rally on strong earnings.')
+
+    def test_category_inference_detects_security_and_business_topics(self):
+        self.assertEqual(_infer_category('Military strike near border', 'Conflict escalates', 'global_trends'), 'security')
+        self.assertEqual(_infer_category('Markets rally on earnings', 'Stock market update', 'politics'), 'economy')
+        self.assertEqual(_infer_category('Refugee crisis worsens', 'Humanitarian aid needed', 'politics'), 'human_rights')
+
     def test_sync_external_insights_applies_source_defaults(self):
         category = InsightCategory.objects.create(name='Economy')
         tag = InsightTag.objects.create(name='Markets')
@@ -280,17 +328,19 @@ class InsightDraftPermissionsTests(TestCase):
         )
         source.default_tags.add(tag)
 
-        created = sync_external_insights([{
+        created, _updated = sync_external_insights([{
             'title': 'Source Default Article',
             'summary': 'Imported summary',
             'source_name': 'Economy RSS',
             'source_url': 'https://example.com/source-default',
+            'external_id': 'rss:source-default',
         }], source=source)
 
         insight = Insight.objects.get(title='Source Default Article')
         self.assertEqual(created, 1)
         self.assertEqual(insight.category_ref, category)
         self.assertEqual(insight.tag_refs.first(), tag)
+        self.assertTrue(insight.is_published)
 
     def test_sync_configured_external_sources_uses_active_sources(self):
         source = ExternalInsightSource.objects.create(
@@ -306,7 +356,7 @@ class InsightDraftPermissionsTests(TestCase):
                 'source_name': 'Configured RSS',
                 'source_url': 'https://example.com/configured-article',
             }]
-            created = sync_configured_external_sources()
+            created, _updated = sync_configured_external_sources()
 
         source.refresh_from_db()
         self.assertEqual(created, 1)
@@ -315,6 +365,7 @@ class InsightDraftPermissionsTests(TestCase):
 
     def test_configured_external_insights_task_runs_sync(self):
         with patch('apps.insights.tasks.sync_configured_external_sources') as sync_sources:
-            sync_sources.return_value = 2
+            sync_sources.return_value = (2, 3)
 
-            self.assertEqual(sync_configured_external_insights_task(), 2)
+            result = sync_configured_external_insights_task()
+            self.assertEqual(result, {'created': 2, 'updated': 3})

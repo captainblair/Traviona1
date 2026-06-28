@@ -19,8 +19,12 @@ const variants = {
     className: 'h-16 w-auto max-w-[8rem] sm:h-[4.5rem] sm:max-w-[9.5rem]',
   },
   mark: {
-    src: '/images/logo-light.png',
-    className: 'h-11 w-auto max-w-[3rem] object-cover object-top',
+    src: '/images/logo-mark.png',
+    className: 'h-11 w-auto max-w-[3rem] object-contain',
+  },
+  assistant: {
+    src: '/images/logo-mark.png',
+    className: 'h-8 w-8 object-contain',
   },
 };
 

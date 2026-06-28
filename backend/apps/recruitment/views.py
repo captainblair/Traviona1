@@ -1,11 +1,12 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Q
+from django.db.models import Case, Count, IntegerField, Q, Value, When
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.core.permissions import IsRecruiterRole, has_role
 from .models import ApplicationStatusHistory, ExternalJobSource, JobApplication, JobPosting, RecruitmentNotification, TalentProfile
+from .pagination import JobPagination
 from .serializers import ExternalJobSourceSerializer, JobApplicationSerializer, JobPostingSerializer, RecruitmentNotificationSerializer, TalentProfileSerializer
 
 User = get_user_model()
@@ -15,14 +16,61 @@ def has_recruiter_access(user):
     return has_role(user, ['recruiter', 'admin'])
 
 
+def prioritize_kenya_and_myjobmag(queryset):
+    """List MyJobMag and Kenya-based roles before other external feeds."""
+    return queryset.annotate(
+        listing_priority=Case(
+            When(source_name__icontains='myjobmag', then=Value(0)),
+            When(location__icontains='kenya', then=Value(1)),
+            default=Value(2),
+            output_field=IntegerField(),
+        )
+    ).order_by('listing_priority', '-created_at')
+
+
 class JobListView(generics.ListCreateAPIView):
     queryset = JobPosting.objects.filter(is_active=True).order_by('-created_at')
     serializer_class = JobPostingSerializer
+    pagination_class = JobPagination
 
     def get_permissions(self):
         if self.request.method == 'POST':
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        params = self.request.query_params
+
+        search_term = (params.get('search') or params.get('q') or '').strip()
+        if search_term:
+            queryset = queryset.filter(
+                Q(title__icontains=search_term)
+                | Q(summary__icontains=search_term)
+                | Q(description__icontains=search_term)
+                | Q(location__icontains=search_term)
+                | Q(source_name__icontains=search_term)
+            )
+
+        location = (params.get('location') or '').strip()
+        if location and location.lower() != 'all':
+            queryset = queryset.filter(location__icontains=location.replace('-', ' '))
+
+        employment_type = (params.get('employment_type') or '').strip()
+        if employment_type and employment_type.lower() != 'all':
+            queryset = queryset.filter(employment_type=employment_type)
+
+        experience_level = (params.get('experience_level') or '').strip()
+        if experience_level and experience_level.lower() != 'all':
+            queryset = queryset.filter(experience_level__icontains=experience_level.replace('-', ' '))
+
+        source_name = (params.get('source') or '').strip()
+        if source_name and source_name.lower() != 'all':
+            queryset = queryset.filter(source_name__icontains=source_name.replace('-', ' '))
+        else:
+            queryset = prioritize_kenya_and_myjobmag(queryset)
+
+        return queryset
 
     def perform_create(self, serializer):
         user = self.request.user

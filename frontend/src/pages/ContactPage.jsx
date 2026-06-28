@@ -63,8 +63,8 @@ export default function ContactPage() {
     }
   }
 
-  const email = contactInfo?.email || 'info@travionaconsulting.com';
-  const phone = contactInfo?.phone;
+  const email = contactInfo?.email || 'info@travionaconsulting.top';
+  const phone = contactInfo?.phone || '+254 111 414 4441';
   const address = contactInfo?.address;
 
   return (

@@ -1,10 +1,10 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, BadgeCheck, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import ExpertPhoto from '../components/ExpertPhoto.jsx';
 import Footer from '../components/Footer.jsx';
 import TalentHero from '../components/TalentHero.jsx';
-import { RevealItem, RevealSection } from '../components/reveal.jsx';
-import { expertiseFilters } from '../data/dummyTalents.js';
+import { expertiseFilters } from '../data/teamMembers.js';
 import { fetchTalents } from '../lib/talentApi.js';
 
 function ExpertTag({ label, primary = false }) {
@@ -19,86 +19,93 @@ function ExpertTag({ label, primary = false }) {
   );
 }
 
-function ExpertCard({ expert, index, compact = false }) {
+function ExpertCard({ expert, compact = false }) {
   const {
     full_name,
     headline,
     bio,
     tags,
+    location,
+    years_experience,
     image,
-    imageHeight,
-    imageWidth,
-    imageTop,
-    imageLeft,
-    imageTransform,
     imagePosition,
+    is_verified,
+    is_leadership,
   } = expert;
 
   if (compact) {
     return (
-      <RevealItem
-        delay={index * 70}
-        as="article"
-        className="flex min-w-0 gap-3 rounded-lg border border-ink/8 bg-white p-3 shadow-[0_10px_28px_rgba(7,19,31,0.06)]"
-      >
-        <ExpertPhoto
-          name={full_name}
-          image={image}
-          compact
-          imageHeight={imageHeight || '200%'}
-          imageWidth={imageWidth || '120%'}
-          imageTop={imageTop ?? '-15%'}
-          imageLeft={imageLeft || '50%'}
-          imageTransform={imageTransform || 'translateX(-50%)'}
-          imagePosition={imagePosition || 'center 10%'}
-        />
+      <article className="flex min-w-0 gap-3 rounded-lg border border-ink/8 bg-white p-3 shadow-[0_10px_28px_rgba(7,19,31,0.06)]">
+        <ExpertPhoto name={full_name} image={image} objectPosition={imagePosition} compact />
         <div className="min-w-0 flex-1">
-          <h3 className="line-clamp-2 font-display text-sm font-bold leading-5 text-ink">{full_name}</h3>
+          <div className="flex items-start gap-2">
+            <h3 className="line-clamp-2 flex-1 font-display text-sm font-bold leading-5 text-ink">{full_name}</h3>
+            {is_verified && (
+              <BadgeCheck className="h-4 w-4 shrink-0 text-tide" aria-label="Verified expert" />
+            )}
+          </div>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-ink/60">{headline}</p>
+          {location && (
+            <p className="mt-1 inline-flex items-center gap-1 text-[0.65rem] text-ink/50">
+              <MapPin className="h-3 w-3" aria-hidden="true" />
+              {location}
+            </p>
+          )}
           <div className="mt-2 flex flex-wrap gap-1.5">
             {tags.slice(0, 2).map((tag) => (
               <ExpertTag key={tag} label={tag} primary={tag === tags[0]} />
             ))}
           </div>
         </div>
-      </RevealItem>
+      </article>
     );
   }
 
   return (
-    <RevealItem
-      delay={index * 90}
-      as="article"
-      className="flex min-w-0 flex-col overflow-hidden rounded-lg border border-ink/8 bg-white shadow-[0_12px_32px_rgba(7,19,31,0.07)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(7,19,31,0.12)]"
-    >
-      <ExpertPhoto
-        name={full_name}
-        image={image}
-        imageHeight={imageHeight || '100%'}
-        imageWidth={imageWidth || '100%'}
-        imageTop={imageTop || '0'}
-        imageLeft={imageLeft || '0'}
-        imageTransform={imageTransform}
-        imagePosition={imagePosition || 'center top'}
-      />
+    <article className="flex min-w-0 flex-col overflow-hidden rounded-lg border border-ink/8 bg-white shadow-[0_12px_32px_rgba(7,19,31,0.07)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(7,19,31,0.12)]">
+      <ExpertPhoto name={full_name} image={image} objectPosition={imagePosition} />
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-display text-lg font-bold leading-6 text-ink">{full_name}</h3>
-        <p className="mt-1 text-sm text-ink/60">{headline}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="font-display text-lg font-bold leading-6 text-ink">{full_name}</h3>
+            <p className="mt-1 text-sm text-ink/60">{headline}</p>
+          </div>
+          {is_verified && (
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-tide/12 px-2.5 py-1 text-[0.65rem] font-semibold text-harbor">
+              <BadgeCheck className="h-3.5 w-3.5" aria-hidden="true" />
+              Verified
+            </span>
+          )}
+        </div>
+
+        {(location || years_experience > 0) && (
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-ink/50">
+            {location && (
+              <span className="inline-flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                {location}
+              </span>
+            )}
+            {years_experience > 0 && <span>{years_experience}+ years experience</span>}
+            {is_leadership && <span className="font-semibold text-harbor">Leadership</span>}
+          </div>
+        )}
+
         <div className="mt-4 flex flex-wrap gap-2">
           {tags.map((tag, tagIndex) => (
             <ExpertTag key={tag} label={tag} primary={tagIndex === 0} />
           ))}
         </div>
-        <p className="mt-4 line-clamp-3 flex-1 text-sm leading-6 text-ink/65">{bio}</p>
-        <button
-          type="button"
+        <p className="mt-4 line-clamp-4 flex-1 text-sm leading-6 text-ink/65">{bio}</p>
+        <Link
+          to="/contact?topic=talent"
           className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-tide px-5 py-3 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white"
         >
-          View Profile
+          Request introduction
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </button>
+        </Link>
       </div>
-    </RevealItem>
+    </article>
   );
 }
 
@@ -135,7 +142,7 @@ export default function TalentNetworkPage() {
         onSearch={() => setSearchTerm(query)}
       />
 
-      <RevealSection className="w-full max-w-full overflow-x-hidden bg-ivory px-4 pb-10 pt-0 sm:px-8 lg:px-10 lg:py-10">
+      <section className="w-full max-w-full overflow-x-hidden bg-ivory px-4 pb-10 pt-0 sm:px-8 lg:px-10 lg:py-10">
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10">
           <aside className="relative z-10 -mt-8 min-w-0 rounded-xl bg-midnight px-4 py-5 shadow-[0_18px_40px_rgba(7,19,31,0.18)] ring-1 ring-white/10 lg:mt-0 lg:rounded-none lg:bg-transparent lg:p-0 lg:shadow-none lg:ring-0">
             <h2 className="font-display text-lg font-bold text-white lg:text-xl lg:text-ink">Expertise</h2>
@@ -165,21 +172,29 @@ export default function TalentNetworkPage() {
                   <h2 className="font-display text-xl font-bold text-ink sm:text-2xl lg:hidden">Recent Experts</h2>
                   <h2 className="hidden font-display text-2xl font-bold text-ink lg:block">Expert Directory</h2>
                   <p className="mt-2 text-sm text-ink/60">
-                    {isLoading ? 'Loading experts…' : `${experts.length} expert${experts.length === 1 ? '' : 's'} shown`}
+                    {isLoading
+                      ? 'Loading experts…'
+                      : `${experts.length} founding expert${experts.length === 1 ? '' : 's'} shown`}
                   </p>
+                  {!isLoading && experts.length > 0 && (
+                    <p className="mt-1 text-sm text-ink/50">
+                      Traviona’s leadership team forms the core of our specialist network while we expand verified
+                      experts globally.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 hidden gap-6 lg:grid lg:grid-cols-3">
-              {experts.map((expert, index) => (
-                <ExpertCard key={expert.id} expert={expert} index={index} />
+            <div className="mt-6 hidden gap-6 lg:grid lg:grid-cols-2 xl:grid-cols-2">
+              {experts.map((expert) => (
+                <ExpertCard key={expert.id} expert={expert} />
               ))}
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
-              {experts.map((expert, index) => (
-                <ExpertCard key={expert.id} expert={expert} index={index} compact />
+              {experts.map((expert) => (
+                <ExpertCard key={expert.id} expert={expert} compact />
               ))}
             </div>
 
@@ -190,7 +205,7 @@ export default function TalentNetworkPage() {
             )}
           </div>
         </div>
-      </RevealSection>
+      </section>
 
       <Footer />
     </>

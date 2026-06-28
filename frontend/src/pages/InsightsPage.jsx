@@ -1,8 +1,9 @@
 import { ArrowRight, Clock3 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Footer from '../components/Footer.jsx';
+import InsightCover from '../components/InsightCover.jsx';
 import InsightsHero from '../components/InsightsHero.jsx';
-import { RevealItem, RevealSection } from '../components/reveal.jsx';
 import { insightCategories } from '../data/dummyInsights.js';
 import { fetchInsights } from '../lib/insightsApi.js';
 
@@ -24,19 +25,10 @@ function authorInitials(name) {
     .toUpperCase();
 }
 
-function InsightCard({ insight, index }) {
+function InsightCard({ insight }) {
   return (
-    <RevealItem
-      delay={index * 100}
-      as="article"
-      className="flex min-w-0 flex-col overflow-hidden rounded-lg border border-ink/8 bg-white shadow-[0_12px_32px_rgba(7,19,31,0.07)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(7,19,31,0.12)]"
-    >
-      <img
-        src={insight.image}
-        alt=""
-        className="h-44 w-full object-cover sm:h-48"
-        aria-hidden="true"
-      />
+    <article className="flex min-w-0 flex-col overflow-hidden rounded-lg border border-ink/8 bg-white shadow-[0_12px_32px_rgba(7,19,31,0.07)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(7,19,31,0.12)]">
+      <InsightCover insight={insight} className="h-44 w-full sm:h-48" />
       <div className="flex flex-1 flex-col p-5">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-harbor">
           {insightCategories.find((item) => item.id === insight.category)?.label || insight.category}
@@ -58,24 +50,22 @@ function InsightCard({ insight, index }) {
             {insight.read_time_minutes} min
           </span>
         </div>
+        <Link
+          to={`/insights/${insight.slug}`}
+          className="mt-4 inline-flex items-center gap-2 self-start text-sm font-bold text-harbor transition hover:text-tide"
+        >
+          Read insight
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
       </div>
-    </RevealItem>
+    </article>
   );
 }
 
-function InsightListItem({ insight, index }) {
+function InsightListItem({ insight }) {
   return (
-    <RevealItem
-      delay={index * 80}
-      as="article"
-      className="flex min-w-0 gap-4 rounded-lg border border-ink/8 bg-white p-3 shadow-[0_10px_28px_rgba(7,19,31,0.06)] sm:p-4"
-    >
-      <img
-        src={insight.image}
-        alt=""
-        className="h-24 w-24 shrink-0 rounded-md object-cover sm:h-28 sm:w-28"
-        aria-hidden="true"
-      />
+    <article className="flex min-w-0 gap-4 rounded-lg border border-ink/8 bg-white p-3 shadow-[0_10px_28px_rgba(7,19,31,0.06)] sm:p-4">
+      <InsightCover insight={insight} className="h-24 w-24 shrink-0 rounded-md sm:h-28 sm:w-28" compact />
       <div className="min-w-0 flex-1">
         <p className="text-[0.65rem] font-bold uppercase tracking-[0.12em] text-harbor">
           {insightCategories.find((item) => item.id === insight.category)?.label || insight.category}
@@ -85,8 +75,15 @@ function InsightListItem({ insight, index }) {
         <p className="mt-2 text-xs text-ink/50">
           {insight.author_name} · {formatPublishedDate(insight.published_at)}
         </p>
+        <Link
+          to={`/insights/${insight.slug}`}
+          className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-harbor transition hover:text-tide"
+        >
+          Read insight
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
       </div>
-    </RevealItem>
+    </article>
   );
 }
 
@@ -96,16 +93,28 @@ export default function InsightsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [insights, setInsights] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadInsights() {
       setIsLoading(true);
-      const results = await fetchInsights({ category: activeCategory, query: searchTerm });
-      if (!cancelled) {
-        setInsights(results);
-        setIsLoading(false);
+      setLoadError('');
+      try {
+        const results = await fetchInsights({ category: activeCategory, query: searchTerm });
+        if (!cancelled) {
+          setInsights(results);
+        }
+      } catch {
+        if (!cancelled) {
+          setInsights([]);
+          setLoadError('Could not load insights. Make sure the backend is running on port 8000.');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -114,8 +123,6 @@ export default function InsightsPage() {
       cancelled = true;
     };
   }, [activeCategory, searchTerm]);
-
-  const visibleInsights = useMemo(() => insights, [insights]);
 
   return (
     <>
@@ -144,80 +151,40 @@ export default function InsightsPage() {
         </div>
       </section>
 
-      <section className="border-b border-ink/8 bg-ivory px-4 py-8 lg:hidden sm:px-8">
-        <div className="mx-auto w-full max-w-7xl rounded-xl border border-ink/8 bg-white p-5 shadow-[0_10px_28px_rgba(7,19,31,0.06)]">
-          <h2 className="font-display text-xl font-bold text-ink">Stay Informed</h2>
-          <p className="mt-2 text-sm leading-6 text-ink/65">
-            Receive curated global affairs briefings from the Traviona insights desk.
-          </p>
-          <form
-            className="mt-4 flex flex-col gap-3 sm:flex-row"
-            onSubmit={(event) => {
-              event.preventDefault();
-            }}
-          >
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="w-full rounded-full border border-ink/12 px-4 py-3 text-sm text-ink outline-none ring-tide/30 placeholder:text-ink/45 focus:ring-2"
-            />
-            <button
-              type="submit"
-              className="inline-flex shrink-0 items-center justify-center rounded-full bg-tide px-6 py-3 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white"
-            >
-              Submit
-            </button>
-          </form>
-        </div>
-      </section>
-
-      <RevealSection className="w-full max-w-full overflow-x-hidden bg-white px-4 py-12 sm:px-8 sm:py-14 lg:px-10">
+      <section className="w-full max-w-full overflow-x-hidden bg-ivory px-4 py-12 sm:px-8 sm:py-14 lg:px-10">
         <div className="mx-auto w-full max-w-7xl">
           <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">Latest Insights</h2>
               <p className="mt-2 text-sm text-ink/60">
-                {isLoading ? 'Loading insights…' : `${visibleInsights.length} article${visibleInsights.length === 1 ? '' : 's'} shown`}
+                {isLoading ? 'Loading insights…' : `${insights.length} article${insights.length === 1 ? '' : 's'} shown`}
               </p>
             </div>
           </div>
 
-          <div className="mt-8 hidden gap-6 lg:grid lg:grid-cols-4">
-            {visibleInsights.map((insight, index) => (
-              <InsightCard key={insight.id} insight={insight} index={index} />
+          {loadError && (
+            <p className="mt-8 rounded-lg border border-red-200 bg-red-50 px-4 py-6 text-sm text-red-800">{loadError}</p>
+          )}
+
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {insights.map((insight) => (
+              <InsightCard key={insight.id} insight={insight} />
             ))}
           </div>
 
           <div className="mt-8 space-y-4 lg:hidden">
-            <h3 className="font-display text-lg font-bold text-ink">Popular Articles</h3>
-            {visibleInsights.map((insight, index) => (
-              <InsightListItem key={insight.id} insight={insight} index={index} />
+            {insights.map((insight) => (
+              <InsightListItem key={insight.id} insight={insight} />
             ))}
           </div>
 
-          {!isLoading && visibleInsights.length === 0 && (
+          {!isLoading && !loadError && insights.length === 0 && (
             <p className="mt-8 rounded-lg border border-ink/10 bg-mist/40 px-4 py-6 text-sm text-ink/70">
               No insights matched your filters. Try another category or search term.
             </p>
           )}
-
-          <div className="mt-10 hidden items-center justify-between lg:flex">
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-tide" />
-              <span className="h-2.5 w-2.5 rounded-full bg-ink/15" />
-              <span className="h-2.5 w-2.5 rounded-full bg-ink/15" />
-            </div>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 text-sm font-bold text-harbor transition hover:text-tide"
-              disabled
-            >
-              Next Page
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
         </div>
-      </RevealSection>
+      </section>
 
       <Footer />
     </>

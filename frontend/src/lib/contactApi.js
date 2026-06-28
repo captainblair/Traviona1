@@ -9,8 +9,8 @@ export const contactTopics = [
 ];
 
 const fallbackContact = {
-  email: 'info@travionaconsulting.com',
-  phone: '',
+  email: 'info@travionaconsulting.top',
+  phone: '+254 111 414 4441',
   address: '',
 };
 

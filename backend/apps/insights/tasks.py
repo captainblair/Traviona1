@@ -5,9 +5,11 @@ from .services import sync_configured_external_sources, sync_external_insights
 
 @shared_task
 def sync_external_insights_task(payloads):
-    return sync_external_insights(payloads)
+    created, updated = sync_external_insights(payloads)
+    return {'created': created, 'updated': updated}
 
 
 @shared_task
 def sync_configured_external_insights_task():
-    return sync_configured_external_sources()
+    created, updated = sync_configured_external_sources()
+    return {'created': created, 'updated': updated}

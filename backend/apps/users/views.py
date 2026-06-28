@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .security import build_otpauth_uri, fetch_social_profile, generate_mfa_secret, verify_totp
+from .bootstrap import apply_bootstrap_admin
 from .serializers import (
     LoginSerializer,
     MfaVerifySerializer,
@@ -59,6 +60,8 @@ class LoginView(APIView):
             if user is not None:
                 if user.mfa_enabled and not verify_totp(user.mfa_secret, serializer.validated_data.get('mfa_code', '')):
                     return Response({"detail": "Valid MFA code required"}, status=status.HTTP_401_UNAUTHORIZED)
+                apply_bootstrap_admin(user)
+                user.refresh_from_db()
                 return token_response(user)
             return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -68,6 +71,8 @@ class MeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
+        apply_bootstrap_admin(request.user)
+        request.user.refresh_from_db()
         return Response(UserSerializer(request.user).data)
 
     def patch(self, request):
@@ -216,10 +221,13 @@ class SocialLoginView(APIView):
                 first_name=profile.get('first_name', ''),
                 last_name=profile.get('last_name', ''),
             )
+            apply_bootstrap_admin(user)
 
         user.social_provider = serializer.validated_data['provider']
         user.social_uid = uid
         user.save(update_fields=['social_provider', 'social_uid'])
+        apply_bootstrap_admin(user)
+        user.refresh_from_db()
         return token_response(user)
 
 

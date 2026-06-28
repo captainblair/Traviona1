@@ -118,11 +118,11 @@ export default function Footer() {
               Strategic international consulting and global insights for a complex world.
             </p>
             <a
-              href="mailto:info@travionaconsulting.com"
+              href="mailto:info@travionaconsulting.top"
               className="mt-4 inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-tide"
             >
               <Mail className="h-4 w-4 shrink-0 text-tide" aria-hidden="true" />
-              info@travionaconsulting.com
+              info@travionaconsulting.top
             </a>
           </FooterColumn>
         </div>

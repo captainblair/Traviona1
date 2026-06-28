@@ -5,6 +5,7 @@ import {
   getStoredUser,
   login as loginRequest,
   register as registerRequest,
+  socialLogin as socialLoginRequest,
 } from '../lib/authApi.js';
 
 const AuthContext = createContext(null);
@@ -42,6 +43,12 @@ export function AuthProvider({ children }) {
     return nextUser;
   }, []);
 
+  const socialLogin = useCallback(async (payload) => {
+    const nextUser = await socialLoginRequest(payload);
+    setUser(nextUser);
+    return nextUser;
+  }, []);
+
   const logout = useCallback(() => {
     clearSession();
     setUser(null);
@@ -54,9 +61,10 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(user),
       login,
       register,
+      socialLogin,
       logout,
     }),
-    [user, isLoading, login, register, logout],
+    [user, isLoading, login, register, socialLogin, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

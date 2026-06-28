@@ -5,7 +5,21 @@ from .models import ApplicationStatusHistory, ExternalJobSource, JobApplication,
 class JobPostingSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobPosting
-        fields = ['id', 'title', 'slug', 'summary', 'description', 'location', 'employment_type', 'salary_range', 'experience_level', 'is_active', 'created_at']
+        fields = [
+            'id',
+            'title',
+            'slug',
+            'summary',
+            'description',
+            'location',
+            'employment_type',
+            'salary_range',
+            'experience_level',
+            'source_name',
+            'source_url',
+            'is_active',
+            'created_at',
+        ]
 
 
 class ExternalJobSourceSerializer(serializers.ModelSerializer):
@@ -30,7 +44,7 @@ class ExternalJobSourceSerializer(serializers.ModelSerializer):
 class TalentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = TalentProfile
-        fields = ['id', 'user', 'full_name', 'headline', 'specialization', 'location', 'bio', 'years_experience', 'availability', 'is_public', 'is_verified', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'full_name', 'headline', 'specialization', 'location', 'bio', 'profile_photo', 'years_experience', 'availability', 'is_public', 'is_verified', 'created_at', 'updated_at']
         read_only_fields = ['id', 'user', 'is_verified', 'created_at', 'updated_at']
 
 

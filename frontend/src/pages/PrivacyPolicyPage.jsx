@@ -62,8 +62,8 @@ export default function PrivacyPolicyPage() {
         <p>
           Depending on your location, you may have the right to access, correct, update, restrict, or delete your
           personal data, or to object to certain processing. To exercise these rights, contact us at{' '}
-          <LegalInlineLink href="mailto:privacy@travionaconsulting.com">
-            privacy@travionaconsulting.com
+          <LegalInlineLink href="mailto:privacy@travionaconsulting.top">
+            privacy@travionaconsulting.top
           </LegalInlineLink>
           .
         </p>
@@ -72,8 +72,8 @@ export default function PrivacyPolicyPage() {
       <LegalSection number="6" title="Contact Us">
         <p>
           If you have questions about this Privacy Policy or our data practices, please contact{' '}
-          <LegalInlineLink href="mailto:privacy@travionaconsulting.com">
-            privacy@travionaconsulting.com
+          <LegalInlineLink href="mailto:privacy@travionaconsulting.top">
+            privacy@travionaconsulting.top
           </LegalInlineLink>{' '}
           or visit our <LegalInlineLink to="/contact">contact page</LegalInlineLink>.
         </p>

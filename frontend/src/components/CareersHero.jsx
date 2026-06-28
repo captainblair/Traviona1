@@ -1,5 +1,5 @@
 import { ChevronDown, Search } from 'lucide-react';
-import { experienceOptions, expertiseOptions, locationOptions } from '../data/dummyJobs.js';
+import { employmentTypeOptions, experienceOptions, locationOptions, sourceOptions } from '../data/jobFilters.js';
 
 function FilterSelect({ id, label, value, onChange, options }) {
   return (
@@ -28,12 +28,14 @@ export default function CareersHero({
   query,
   onQueryChange,
   onSearch,
-  expertise,
-  onExpertiseChange,
+  employmentType,
+  onEmploymentTypeChange,
   location,
   onLocationChange,
   experience,
   onExperienceChange,
+  source,
+  onSourceChange,
 }) {
   return (
     <section className="relative w-full max-w-full overflow-x-hidden bg-ink text-white">
@@ -89,11 +91,11 @@ export default function CareersHero({
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <FilterSelect
-                id="jobs-expertise"
-                label="Expertise"
-                value={expertise}
-                onChange={onExpertiseChange}
-                options={expertiseOptions}
+                id="jobs-type"
+                label="Job type"
+                value={employmentType}
+                onChange={onEmploymentTypeChange}
+                options={employmentTypeOptions}
               />
               <FilterSelect
                 id="jobs-location"
@@ -108,6 +110,16 @@ export default function CareersHero({
                 value={experience}
                 onChange={onExperienceChange}
                 options={experienceOptions}
+              />
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <FilterSelect
+                id="jobs-source"
+                label="Source"
+                value={source}
+                onChange={onSourceChange}
+                options={sourceOptions}
               />
             </div>
           </form>

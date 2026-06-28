@@ -97,6 +97,7 @@ class Insight(models.Model):
     summary = models.TextField(blank=True)
     content = models.TextField(blank=True)
     featured_image = models.ImageField(upload_to='insights/', blank=True, null=True)
+    featured_image_url = models.URLField(blank=True)
     category = models.CharField(max_length=40, choices=CATEGORY_CHOICES, default='global_trends')
     category_ref = models.ForeignKey(InsightCategory, related_name='insights', on_delete=models.SET_NULL, blank=True, null=True)
     tag_refs = models.ManyToManyField(InsightTag, related_name='insights', blank=True)

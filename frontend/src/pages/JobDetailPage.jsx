@@ -212,11 +212,22 @@ export default function JobDetailPage() {
                 {job.salary_range && (
                   <p className="mt-3 text-sm text-white/75">{job.salary_range}</p>
                 )}
-                <ApplyButton
-                  isAuthenticated={isAuthenticated}
-                  onRequireAuth={requireAuth}
-                  className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-bold text-white transition hover:bg-midnight"
-                />
+                {job.is_external && job.source_url ? (
+                  <a
+                    href={job.source_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-bold text-white transition hover:bg-midnight"
+                  >
+                    Apply on {job.source_name || 'original site'}
+                  </a>
+                ) : (
+                  <ApplyButton
+                    isAuthenticated={isAuthenticated}
+                    onRequireAuth={requireAuth}
+                    className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-bold text-white transition hover:bg-midnight"
+                  />
+                )}
               </div>
             </article>
           </aside>
@@ -241,20 +252,39 @@ export default function JobDetailPage() {
                 </li>
               ))}
             </ul>
-            <ApplyButton
-              isAuthenticated={isAuthenticated}
-              onRequireAuth={requireAuth}
-              className="mt-6 hidden w-full items-center justify-center rounded-full bg-tide px-5 py-3 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white lg:inline-flex"
-            />
+            {!job.is_external && (
+              <ApplyButton
+                isAuthenticated={isAuthenticated}
+                onRequireAuth={requireAuth}
+                className="mt-6 hidden w-full items-center justify-center rounded-full bg-tide px-5 py-3 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white lg:inline-flex"
+              />
+            )}
           </aside>
         </div>
 
         <div className="mx-auto mt-8 max-w-7xl">
-          <ApplicationForm
-            jobId={job.id}
-            isAuthenticated={isAuthenticated}
-            onRequireAuth={requireAuth}
-          />
+          {job.is_external && job.source_url ? (
+            <section className="rounded-xl border border-ink/8 bg-white p-5 shadow-[0_10px_28px_rgba(7,19,31,0.06)]">
+              <h2 className="font-display text-xl font-bold text-ink">Apply for this role</h2>
+              <p className="mt-2 text-sm text-ink/60">
+                This listing is hosted on {job.source_name || 'an external job board'}. You will apply on the original site.
+              </p>
+              <a
+                href={job.source_url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex items-center justify-center rounded-full bg-tide px-6 py-3.5 text-sm font-bold text-ink transition hover:bg-harbor hover:text-white"
+              >
+                Continue to application
+              </a>
+            </section>
+          ) : (
+            <ApplicationForm
+              jobId={job.id}
+              isAuthenticated={isAuthenticated}
+              onRequireAuth={requireAuth}
+            />
+          )}
         </div>
       </RevealSection>
 

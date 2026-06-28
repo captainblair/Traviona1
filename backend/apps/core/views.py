@@ -23,6 +23,8 @@ def api_index(request):
                 'leadership': '/api/website/leadership/',
                 'contact': '/api/website/contact/',
                 'global_presence': '/api/website/global-presence/',
+                'assistant_config': '/api/website/assistant/config/',
+                'assistant_chat': '/api/website/assistant/chat/',
             },
             'insights': {
                 'public': '/api/insights/',

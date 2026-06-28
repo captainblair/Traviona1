@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import BrandLockup from '../components/BrandLockup.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { requestPasswordReset } from '../lib/authApi.js';
+import { isGoogleAuthEnabled, requestGoogleAccessToken } from '../lib/googleAuth.js';
 const PASSWORD_HINT =
   'Use at least 8 characters with uppercase, lowercase, and a number.';
 
@@ -93,17 +94,69 @@ function LinkedInIcon() {
   );
 }
 
-function SocialButton({ provider, icon: Icon }) {
+function SocialButton({ provider, icon: Icon, onClick, disabled = false, loading = false, title = '' }) {
   return (
     <button
       type="button"
-      disabled
-      title={`${provider} sign-in coming soon`}
+      onClick={onClick}
+      disabled={disabled || loading}
+      title={title}
       className="auth-social-btn"
     >
       <Icon />
-      <span>{provider}</span>
+      <span>{loading ? 'Connecting…' : provider}</span>
     </button>
+  );
+}
+
+function GoogleSignInButton({ onError, onClearNotice, disabled }) {
+  const { socialLogin } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const nextPath = searchParams.get('next') || '/';
+  const [loading, setLoading] = useState(false);
+  const enabled = isGoogleAuthEnabled();
+
+  async function handleGoogleSignIn() {
+    if (!enabled) {
+      onError('Google Sign-In is not configured.');
+      return;
+    }
+
+    setLoading(true);
+    onError('');
+    onClearNotice?.();
+
+    try {
+      const accessToken = await requestGoogleAccessToken();
+      await socialLogin({ provider: 'google', access_token: accessToken });
+      navigate(nextPath, { replace: true });
+    } catch (err) {
+      onError(err.message || 'Google sign-in failed.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <SocialButton
+      provider="Google"
+      icon={GoogleIcon}
+      onClick={handleGoogleSignIn}
+      disabled={disabled || !enabled}
+      loading={loading}
+    />
+  );
+}
+
+function LinkedInSignInButton({ onNotify, disabled }) {
+  return (
+    <SocialButton
+      provider="LinkedIn"
+      icon={LinkedInIcon}
+      onClick={() => onNotify('Feature not enabled yet.')}
+      disabled={disabled}
+    />
   );
 }
 
@@ -198,6 +251,7 @@ export default function AuthPage({ initialMode = 'login' }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [notice, setNotice] = useState('');
   const [showReset, setShowReset] = useState(false);
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -214,7 +268,14 @@ export default function AuthPage({ initialMode = 'login' }) {
   useEffect(() => {
     setShowReset(false);
     setError('');
+    setNotice('');
   }, [initialMode]);
+
+  function showFeatureNotice(text) {
+    setError('');
+    setMessage('');
+    setNotice(text);
+  }
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -225,6 +286,7 @@ export default function AuthPage({ initialMode = 'login' }) {
   async function handleLogin(event) {
     event.preventDefault();
     setError('');
+    setNotice('');
     setIsSubmitting(true);
     try {
       await login({
@@ -242,6 +304,7 @@ export default function AuthPage({ initialMode = 'login' }) {
   async function handleRegister(event) {
     event.preventDefault();
     setError('');
+    setNotice('');
 
     if (!registerForm.acceptTerms) {
       setError('Please accept the Terms of Service and Privacy Policy.');
@@ -322,12 +385,13 @@ export default function AuthPage({ initialMode = 'login' }) {
           <h1 className="auth-title">Sign up for Traviona Consulting</h1>
 
           <div className="auth-social-grid">
-            <SocialButton provider="Google" icon={GoogleIcon} />
-            <SocialButton provider="LinkedIn" icon={LinkedInIcon} />
+            <GoogleSignInButton onError={setError} onClearNotice={() => setNotice('')} disabled={isSubmitting} />
+            <LinkedInSignInButton onNotify={showFeatureNotice} disabled={isSubmitting} />
           </div>
 
           <AuthDivider label="Manual sign up" />
 
+          {notice && <p className="auth-alert auth-alert-info">{notice}</p>}
           {error && <p className="auth-alert auth-alert-error">{error}</p>}
 
           <form className="auth-form" onSubmit={handleRegister}>
@@ -415,12 +479,13 @@ export default function AuthPage({ initialMode = 'login' }) {
           <p className="auth-subtitle">Please enter your details.</p>
 
           <div className="auth-social-grid">
-            <SocialButton provider="Google" icon={GoogleIcon} />
-            <SocialButton provider="LinkedIn" icon={LinkedInIcon} />
+            <GoogleSignInButton onError={setError} onClearNotice={() => setNotice('')} disabled={isSubmitting} />
+            <LinkedInSignInButton onNotify={showFeatureNotice} disabled={isSubmitting} />
           </div>
 
           <AuthDivider label="Manual sign in" />
 
+          {notice && <p className="auth-alert auth-alert-info">{notice}</p>}
           {error && <p className="auth-alert auth-alert-error">{error}</p>}
           {message && <p className="auth-alert auth-alert-success">{message}</p>}
 

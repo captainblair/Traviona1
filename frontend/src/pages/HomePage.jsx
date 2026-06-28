@@ -1,10 +1,18 @@
 import { ArrowRight, BriefcaseBusiness } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero.jsx';
+import TestimonialsSection from '../components/TestimonialsSection.jsx';
 import { RevealItem, RevealSection } from '../components/reveal.jsx';
-import { services } from '../data/services.js';
+import { fetchServices } from '../lib/websiteApi.js';
 
 export default function HomePage() {
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    fetchServices().then(setServices);
+  }, []);
+
   return (
     <>
       <PageHero
@@ -22,7 +30,10 @@ export default function HomePage() {
           </div>
 
           <div className="mt-8 grid w-full min-w-0 grid-cols-1 gap-5 md:grid-cols-3 xl:grid-cols-5">
-            {services.map(({ slug, title, cardText, image }, index) => (
+            {services.length === 0 ? (
+              <p className="col-span-full text-sm text-ink/50">Loading services…</p>
+            ) : (
+              services.map(({ slug, title, cardText, image }, index) => (
               <RevealItem
                 key={slug}
                 as="article"
@@ -42,7 +53,8 @@ export default function HomePage() {
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </RevealItem>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </RevealSection>
@@ -81,6 +93,8 @@ export default function HomePage() {
           </div>
         </div>
       </RevealSection>
+
+      <TestimonialsSection />
 
       <RevealSection id="careers" className="w-full max-w-full overflow-x-hidden bg-midnight px-4 py-14 text-white sm:px-8 sm:py-20 lg:px-10">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">

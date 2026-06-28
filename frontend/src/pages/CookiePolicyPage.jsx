@@ -73,7 +73,7 @@ export default function CookiePolicyPage() {
       <LegalSection number="7" title="Contact">
         <p>
           For questions about our use of cookies, contact{' '}
-          <LegalInlineLink href="mailto:privacy@travionaconsulting.com">privacy@travionaconsulting.com</LegalInlineLink>.
+          <LegalInlineLink href="mailto:privacy@travionaconsulting.top">privacy@travionaconsulting.top</LegalInlineLink>.
         </p>
       </LegalSection>
     </LegalDocumentLayout>

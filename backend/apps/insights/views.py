@@ -7,6 +7,7 @@ from rest_framework.schemas.openapi import AutoSchema
 from rest_framework.views import APIView
 from apps.core.permissions import IsContentEditorRole
 from .models import ExternalInsightSource, Insight, InsightAuthor, InsightCategory, InsightTag
+from .pagination import InsightPagination
 from .serializers import (
     ExternalInsightSourceSerializer,
     InsightAuthorSerializer,
@@ -21,6 +22,7 @@ class InsightListView(generics.ListAPIView):
     queryset = Insight.objects.filter(is_published=True).order_by('-published_at')
     serializer_class = InsightSerializer
     permission_classes = [permissions.AllowAny]
+    pagination_class = InsightPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()

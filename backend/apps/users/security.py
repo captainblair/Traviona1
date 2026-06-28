@@ -35,15 +35,32 @@ def build_otpauth_uri(user, secret, issuer='Traviona'):
 
 
 def fetch_google_profile(access_token):
+    from django.conf import settings
+
+    client_id = getattr(settings, 'GOOGLE_OAUTH_CLIENT_ID', '') or ''
+    tokeninfo_url = f'https://oauth2.googleapis.com/tokeninfo?access_token={access_token}'
+    with urlopen(Request(tokeninfo_url), timeout=15) as response:
+        token_data = json.loads(response.read().decode('utf-8'))
+
+    if token_data.get('error'):
+        raise ValueError(token_data.get('error_description') or token_data['error'])
+
+    if client_id and token_data.get('aud') != client_id:
+        raise ValueError('Google token audience mismatch')
+
+    if token_data.get('email_verified') not in (True, 'true'):
+        raise ValueError('Google email is not verified')
+
     request = Request(
         'https://www.googleapis.com/oauth2/v3/userinfo',
         headers={'Authorization': f'Bearer {access_token}'},
     )
     with urlopen(request, timeout=15) as response:
         data = json.loads(response.read().decode('utf-8'))
+
     return {
-        'uid': data.get('sub', ''),
-        'email': data.get('email', ''),
+        'uid': data.get('sub', '') or token_data.get('sub', ''),
+        'email': data.get('email', '') or token_data.get('email', ''),
         'first_name': data.get('given_name', ''),
         'last_name': data.get('family_name', ''),
     }

@@ -3,21 +3,15 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CareersHero from '../components/CareersHero.jsx';
 import Footer from '../components/Footer.jsx';
-import { RevealItem, RevealSection } from '../components/reveal.jsx';
 import { fetchJobs } from '../lib/jobsApi.js';
-
 function formatEmploymentType(value) {
   return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function JobCard({ job, index, compact = false }) {
+function JobCard({ job, compact = false }) {
   if (compact) {
     return (
-      <RevealItem
-        delay={index * 80}
-        as="article"
-        className="flex min-w-0 flex-col rounded-lg border border-ink/8 bg-white p-5 shadow-[0_10px_28px_rgba(7,19,31,0.06)]"
-      >
+      <article className="flex min-w-0 flex-col rounded-lg border border-ink/8 bg-white p-5 shadow-[0_10px_28px_rgba(7,19,31,0.06)]">
         <h3 className="font-display text-lg font-bold leading-6 text-ink">{job.title}</h3>
         <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-ink/60">
           <MapPin className="h-4 w-4 shrink-0 text-harbor" aria-hidden="true" />
@@ -31,16 +25,12 @@ function JobCard({ job, index, compact = false }) {
           View Details
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
-      </RevealItem>
+      </article>
     );
   }
 
   return (
-    <RevealItem
-      delay={index * 90}
-      as="article"
-      className="flex min-w-0 flex-col rounded-lg border border-ink/8 bg-white p-6 shadow-[0_12px_32px_rgba(7,19,31,0.07)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(7,19,31,0.12)]"
-    >
+    <article className="flex min-w-0 flex-col rounded-lg border border-ink/8 bg-white p-6 shadow-[0_12px_32px_rgba(7,19,31,0.07)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(7,19,31,0.12)]">
       <h3 className="font-display text-xl font-bold leading-7 text-ink">{job.title}</h3>
       <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-ink/60">
         <MapPin className="h-4 w-4 shrink-0 text-harbor" aria-hidden="true" />
@@ -59,36 +49,54 @@ function JobCard({ job, index, compact = false }) {
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>
-    </RevealItem>
+    </article>
   );
 }
 
 export default function CareersPage() {
   const [query, setQuery] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [expertise, setExpertise] = useState('all');
+  const [employmentType, setEmploymentType] = useState('all');
   const [location, setLocation] = useState('all');
   const [experience, setExperience] = useState('all');
+  const [source, setSource] = useState('all');
   const [jobs, setJobs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadJobs() {
       setIsLoading(true);
-      const results = await fetchJobs({ expertise, location, experience, query: searchTerm });
-      if (!cancelled) {
-        setJobs(results);
-        setIsLoading(false);
+      setLoadError('');
+      try {
+        const results = await fetchJobs({
+          employmentType,
+          location,
+          experience,
+          source,
+          query: searchTerm,
+        });
+        if (!cancelled) {
+          setJobs(results);
+        }
+      } catch {
+        if (!cancelled) {
+          setJobs([]);
+          setLoadError('Could not load jobs. Make sure the backend is running on port 8000.');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     }
-
     loadJobs();
     return () => {
       cancelled = true;
     };
-  }, [expertise, location, experience, searchTerm]);
+  }, [employmentType, location, experience, source, searchTerm]);
 
   return (
     <>
@@ -96,15 +104,17 @@ export default function CareersPage() {
         query={query}
         onQueryChange={setQuery}
         onSearch={() => setSearchTerm(query)}
-        expertise={expertise}
-        onExpertiseChange={setExpertise}
+        employmentType={employmentType}
+        onEmploymentTypeChange={setEmploymentType}
         location={location}
         onLocationChange={setLocation}
         experience={experience}
         onExperienceChange={setExperience}
+        source={source}
+        onSourceChange={setSource}
       />
 
-      <RevealSection className="w-full max-w-full overflow-x-hidden bg-ivory px-4 pb-12 pt-2 sm:px-8 lg:px-10">
+      <section className="w-full max-w-full overflow-x-hidden bg-ivory px-4 pb-12 pt-8 sm:px-8 lg:px-10">
         <div className="mx-auto w-full max-w-7xl">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -115,26 +125,25 @@ export default function CareersPage() {
             </div>
           </div>
 
-          <div className="mt-8 hidden gap-6 lg:grid lg:grid-cols-2 xl:grid-cols-4">
-            {jobs.map((job, index) => (
-              <JobCard key={job.id} job={job} index={index} />
+          {loadError && (
+            <p className="mt-8 rounded-lg border border-red-200 bg-red-50 px-4 py-6 text-sm text-red-800">
+              {loadError}
+            </p>
+          )}
+
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {jobs.map((job) => (
+              <JobCard key={job.id} job={job} compact />
             ))}
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
-            {jobs.map((job, index) => (
-              <JobCard key={job.id} job={job} index={index} compact />
-            ))}
-          </div>
-
-          {!isLoading && jobs.length === 0 && (
+          {!isLoading && !loadError && jobs.length === 0 && (
             <p className="mt-8 rounded-lg border border-ink/10 bg-white px-4 py-6 text-sm text-ink/70">
               No roles matched your filters. Try another keyword or broaden your search.
             </p>
           )}
         </div>
-      </RevealSection>
-
+      </section>
       <Footer />
     </>
   );

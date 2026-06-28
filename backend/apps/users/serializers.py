@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from .bootstrap import apply_bootstrap_admin
+
 User = get_user_model()
 
 
@@ -23,6 +25,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User(**validated_data)
         user.set_password(password)
         user.save()
+        apply_bootstrap_admin(user)
         return user
 
 

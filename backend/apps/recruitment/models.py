@@ -30,7 +30,41 @@ class JobPosting(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        self.slug = self._ensure_unique_slug(self.slug)
         super().save(*args, **kwargs)
+
+    def _ensure_unique_slug(self, base_slug):
+        slug = slugify(base_slug)[:240] or 'job'
+        if not JobPosting.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            return slug
+
+        for counter in range(2, 1000):
+            candidate = f'{slug}-{counter}'
+            if not JobPosting.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
+                return candidate
+
+        return f'{slug}-{self.pk or "new"}'
+
+    @staticmethod
+    def slug_from_external_item(item, title=''):
+        raw_payload = item.get('raw_payload') or {}
+        if item.get('slug'):
+            return slugify(item['slug'])[:240]
+        if raw_payload.get('slug'):
+            return slugify(raw_payload['slug'])[:240]
+
+        external_id = item.get('external_id', '')
+        if external_id.startswith('myjobmag:'):
+            return slugify(external_id.removeprefix('myjobmag:'))[:240]
+
+        source_url = item.get('source_url', '')
+        if source_url:
+            path_part = source_url.rstrip('/').rsplit('/', 1)[-1]
+            path_slug = slugify(path_part)
+            if path_slug:
+                return path_slug[:240]
+
+        return slugify(title)[:240] or 'job'
 
     def __str__(self):
         return self.title
@@ -45,6 +79,7 @@ class ExternalJobSource(models.Model):
         ('adzuna', 'Adzuna'),
         ('jooble', 'Jooble'),
         ('remoteok', 'Remote OK'),
+        ('myjobmag', 'MyJobMag'),
         ('custom_json', 'Custom JSON'),
     ]
 

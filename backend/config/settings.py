@@ -28,6 +28,7 @@ env = environ.Env(
     FRONTEND_URL=(str, 'http://localhost:3000'),
     EMAIL_BACKEND=(str, 'django.core.mail.backends.console.EmailBackend'),
     DEFAULT_FROM_EMAIL=(str, 'no-reply@traviona.local'),
+    BOOTSTRAP_ADMIN_EMAILS=(str, ''),
     SECURE_SSL_REDIRECT=(bool, False),
     SESSION_COOKIE_SECURE=(bool, False),
     CSRF_COOKIE_SECURE=(bool, False),
@@ -47,6 +48,11 @@ CORS_ALLOWED_ORIGINS = env.list(
     default=['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000', 'http://127.0.0.1:3000'],
 )
 FRONTEND_URL = env('FRONTEND_URL')
+BOOTSTRAP_ADMIN_EMAILS = [
+    email.strip().lower()
+    for email in env('BOOTSTRAP_ADMIN_EMAILS', default='').split(',')
+    if email.strip()
+]
 
 
 # Application definition
@@ -182,19 +188,40 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
+ADZUNA_APP_ID = env('ADZUNA_APP_ID', default='')
+ADZUNA_APP_KEY = env('ADZUNA_APP_KEY', default='')
+NEWSAPI_API_KEY = env('NEWSAPI_API_KEY', default='')
+GNEWS_API_KEY = env('GNEWS_API_KEY', default='')
+JOOBLE_API_KEY = env('JOOBLE_API_KEY', default='')
+WORKABLE_API_KEY = env('WORKABLE_API_KEY', default='')
+
+OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
+XAI_API_KEY = env('XAI_API_KEY', default='')
+ASSISTANT_PROVIDER = env('ASSISTANT_PROVIDER', default='auto')
+ASSISTANT_MODEL = env('ASSISTANT_MODEL', default='')
+
+GOOGLE_OAUTH_CLIENT_ID = env('GOOGLE_OAUTH_CLIENT_ID', default='')
+GOOGLE_OAUTH_CLIENT_SECRET = env('GOOGLE_OAUTH_CLIENT_SECRET', default='')
+
 CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+# Prefork multiprocessing is unsupported on Windows; use a single-process pool instead.
+if os.name == 'nt':
+    CELERY_WORKER_POOL = 'solo'
+    CELERY_WORKER_CONCURRENCY = 1
+
 CELERY_BEAT_SCHEDULE = {
     'sync-configured-external-insights-hourly': {
         'task': 'apps.insights.tasks.sync_configured_external_insights_task',
         'schedule': 60 * 60,
     },
-    'sync-configured-external-jobs-every-six-hours': {
+    'sync-configured-external-jobs-daily': {
         'task': 'apps.recruitment.tasks.sync_configured_external_jobs_task',
-        'schedule': 60 * 60 * 6,
+        'schedule': 60 * 60 * 24,
     },
 }
 

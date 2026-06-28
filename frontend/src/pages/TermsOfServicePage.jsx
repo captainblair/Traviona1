@@ -89,7 +89,7 @@ export default function TermsOfServicePage() {
       <LegalSection number="9" title="Contact">
         <p>
           Questions about these terms may be sent to{' '}
-          <LegalInlineLink href="mailto:legal@travionaconsulting.com">legal@travionaconsulting.com</LegalInlineLink>.
+          <LegalInlineLink href="mailto:legal@travionaconsulting.top">legal@travionaconsulting.top</LegalInlineLink>.
         </p>
       </LegalSection>
     </LegalDocumentLayout>
