@@ -87,6 +87,11 @@ canvas {
   }
 }
 
+.about-values-grid li {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
 .hero-copy {
   animation: hero-rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
