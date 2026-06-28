@@ -1,26 +1,18 @@
-import {
-  Award,
-  Globe2,
-  Handshake,
-  Lightbulb,
-  Linkedin,
-  MapPin,
-  ShieldCheck,
-  Users,
-} from 'lucide-react';
+import { Linkedin, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer.jsx';
+import MissionValueIcon from '../components/MissionValueIcon.jsx';
 import PageHero from '../components/PageHero.jsx';
-import { RevealItem, RevealSection, useInView } from '../components/reveal.jsx';
+import { RevealSection } from '../components/reveal.jsx';
 import { teamMembers } from '../data/teamMembers.js';
 
 const missionValues = [
-  { label: 'Global Impact', icon: Globe2 },
-  { label: 'Client Partnership', icon: Users },
-  { label: 'Innovation', icon: Lightbulb },
-  { label: 'Open Partnership', icon: Handshake },
-  { label: 'Excellence', icon: Award },
-  { label: 'Integrity', icon: ShieldCheck },
+  { label: 'Global Impact', icon: 'globe' },
+  { label: 'Client Partnership', icon: 'users' },
+  { label: 'Innovation', icon: 'lightbulb' },
+  { label: 'Open Partnership', icon: 'handshake' },
+  { label: 'Excellence', icon: 'award' },
+  { label: 'Integrity', icon: 'shield' },
 ];
 
 const leaders = teamMembers.map(({ name, role, image, socialUrl, socialLabel }) => ({
@@ -130,55 +122,30 @@ function GlobalMapPins({ showLabels = true }) {
 }
 
 function MissionValuesGrid() {
-  const { ref, visible } = useInView();
-
   return (
-    <>
-      <div
-        ref={ref}
-        className={`about-values-grid about-values-grid--mobile mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:hidden${visible ? ' is-in-view' : ''}`}
-      >
-        {missionValues.map(({ label, icon: Icon }, index) => (
-          <div
-            key={label}
-            className="about-values-card flex min-w-0 flex-col items-center rounded-md border border-ink/10 bg-white px-2 py-4 text-center shadow-[0_8px_24px_rgba(7,19,31,0.05)] sm:px-3 sm:py-5"
-            style={{ '--i': index }}
-          >
-            <span className="about-values-icon grid h-10 w-10 shrink-0 place-items-center rounded-full bg-tide/12 text-harbor sm:h-11 sm:w-11">
-              <Icon className="block h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-            </span>
-            <p className="about-values-label mt-3 text-xs font-semibold leading-snug text-ink/80 sm:text-sm">{label}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="about-values-grid about-values-grid--desktop mt-6 hidden grid-cols-3 gap-4 lg:grid">
-        {missionValues.map(({ label, icon: Icon }, index) => (
-          <RevealItem
-            key={label}
-            motion="fade"
-            delay={index * 80}
-            className="about-values-card flex min-w-0 flex-col items-center rounded-md border border-ink/10 bg-white px-3 py-5 text-center shadow-[0_8px_24px_rgba(7,19,31,0.05)]"
-          >
-            <span className="about-values-icon grid h-11 w-11 shrink-0 place-items-center rounded-full bg-tide/12 text-harbor">
-              <Icon className="block h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-            </span>
-            <p className="mt-3 text-sm font-semibold leading-snug text-ink/80">{label}</p>
-          </RevealItem>
-        ))}
-      </div>
-    </>
+    <div className="about-values-grid mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+      {missionValues.map(({ label, icon }, index) => (
+        <div
+          key={label}
+          className="about-values-card flex min-w-0 flex-col items-center rounded-md border border-ink/10 bg-white px-2 py-4 text-center shadow-[0_8px_24px_rgba(7,19,31,0.05)] sm:px-3 sm:py-5"
+          style={{ '--i': index }}
+        >
+          <span className="about-values-icon grid h-10 w-10 shrink-0 place-items-center rounded-full bg-tide/12 text-harbor sm:h-11 sm:w-11">
+            <MissionValueIcon name={icon} className="h-5 w-5 shrink-0" />
+          </span>
+          <p className="mt-3 text-xs font-semibold leading-snug text-ink/80 sm:text-sm">{label}</p>
+        </div>
+      ))}
+    </div>
   );
 }
 
 function LeadershipCards({ compact = false, className = '' }) {
   return (
     <div className={`grid grid-cols-2 gap-4 sm:gap-5 ${compact ? '' : 'lg:grid-cols-4'} ${className}`}>
-      {leaders.map(({ name, role, initials, image, socialUrl, socialLabel }, index) => (
-        <RevealItem
+      {leaders.map(({ name, role, initials, image, socialUrl, socialLabel }) => (
+        <article
           key={name}
-          motion="fade"
-          delay={index * 100}
           className={`min-w-0 rounded-lg border border-ink/8 bg-white p-4 text-center shadow-[0_10px_28px_rgba(7,19,31,0.06)] sm:p-5 ${
             compact ? 'shadow-[0_16px_40px_rgba(7,19,31,0.18)]' : 'sm:p-6'
           }`}
@@ -189,7 +156,7 @@ function LeadershipCards({ compact = false, className = '' }) {
           </h3>
           <p className="mt-1 break-words text-xs leading-5 text-ink/60">{role}</p>
           <LeaderSocialLink name={name} url={socialUrl} platform={socialLabel} />
-        </RevealItem>
+        </article>
       ))}
     </div>
   );
@@ -207,7 +174,7 @@ export default function AboutPage() {
 
       <RevealSection
         id="our-story"
-        className="about-page-section w-full max-w-full overflow-x-hidden bg-white px-4 py-14 sm:px-8 sm:py-16 lg:px-10"
+        className="w-full max-w-full overflow-x-hidden bg-white px-4 py-14 sm:px-8 sm:py-16 lg:px-10"
       >
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
           <div className="min-w-0">
@@ -239,10 +206,9 @@ export default function AboutPage() {
         </div>
       </RevealSection>
 
-      {/* Mobile: full-screen global map with leadership overlaid */}
       <RevealSection
         id="leadership"
-        className="about-page-section relative min-h-[100svh] w-full max-w-full overflow-x-hidden lg:hidden"
+        className="relative min-h-[100svh] w-full max-w-full overflow-x-hidden lg:hidden"
       >
         <div className="pointer-events-none absolute inset-0 min-h-full" aria-hidden="true">
           <img
@@ -289,10 +255,9 @@ export default function AboutPage() {
         </div>
       </RevealSection>
 
-      {/* Desktop: separate leadership and global sections */}
       <RevealSection
         id="leadership-desktop"
-        className="about-page-section hidden w-full max-w-full overflow-x-hidden bg-ivory px-4 py-14 sm:px-8 sm:py-16 lg:block lg:px-10"
+        className="hidden w-full max-w-full overflow-x-hidden bg-ivory px-4 py-14 sm:px-8 sm:py-16 lg:block lg:px-10"
       >
         <div className="mx-auto w-full max-w-7xl">
           <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">Leadership Team</h2>
@@ -302,7 +267,7 @@ export default function AboutPage() {
 
       <RevealSection
         id="global-presence-desktop"
-        className="about-page-section hidden w-full max-w-full overflow-x-hidden bg-midnight px-4 py-14 text-white sm:px-8 sm:py-16 lg:block lg:px-10"
+        className="hidden w-full max-w-full overflow-x-hidden bg-midnight px-4 py-14 text-white sm:px-8 sm:py-16 lg:block lg:px-10"
       >
         <div className="mx-auto w-full max-w-7xl">
           <h2 className="font-display text-2xl font-bold sm:text-3xl">Global Presence</h2>
